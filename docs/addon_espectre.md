@@ -106,9 +106,9 @@ Tested with `ESPHome 2026.9.1`, `ESPectre 3.0.0` and `NSPanel-Easy 2026.10.0` wi
 | Addon(s) | Image | RAM | Flash | Impact |
 | :- | :-: | :-: | :-: | :- |
 | base package |  |  |  |  |
-| + ESPectre | 1391455 | 39.9% | 75.8% |  |
-| + climate + climate_backup | 1413351 | 40.5% | 77.0% | minimal imcrease |
-| + Bluetooth Proxy | 1813615 | 77.2% | 98.8% | RAM is OK but very little margin for Flash |
+| + ESPectre | 1391455 | 39.9% | 75.8% | easily within capacity on both RAM and Flash |
+| + ESPectre + climate + climate_backup | 1413351 | 40.5% | 77.0% | minimal increase to RAM or Flash |
+| + ESPectre + climate + climate_backup + Bluetooth Proxy | 1813615 | 77.2% | 98.8% | RAM is still OK but very little remaining margin on Flash |
 <!-- markdownlint-enable MD013 MD033 -->
 
 > [!NOTE]
