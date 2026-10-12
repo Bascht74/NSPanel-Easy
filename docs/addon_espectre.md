@@ -17,7 +17,7 @@ For best results you will need to make adjustments in _Home Assistant > Settings
    The tweaks documented below make some necessary compromises to allow both to work together, but the combination is not recommended.
 2. This add-on repurposes the status icon (chip) normally used for **relay 2**: it shows motion instead of the relay state.
    The relay itself keeps working, but its state is no longer shown on the display.
-   Consider this before combining it with add-ons that use relay 2, such as [Cover](addon_cover.md) or a climate backup relay on relay 2 ([Climate](addon_climate.md)).
+   Consider this before combining it with add-ons that use relay 2, such as [Cover](addon_cover.md) or climate backup relay on relay 2 [Climate](addon_climate.md).
 
 ## Installation
 
