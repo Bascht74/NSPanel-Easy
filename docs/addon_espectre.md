@@ -60,13 +60,6 @@ substitutions:
   climate_backup_delay: "3"
 captive_portal: !remove
 web_server: !remove
-api:
-  encryption:
-    key: !secret api_encryption
-ota:
-  platform: esphome
-  encryption:
-  allow_partition_access: true
 packages:
   remote_package:
     url: https://github.com/edwardtfn/NSPanel-Easy
@@ -88,13 +81,6 @@ substitutions:
   wakeup_with_button_press: true
 captive_portal: !remove
 web_server: !remove
-api:
-  encryption:
-    key: !secret api_encryption
-ota:
-  platform: esphome
-  encryption:
-  allow_partition_access: true
 packages:
   remote_package:
     url: https://github.com/edwardtfn/NSPanel-Easy
@@ -117,13 +103,6 @@ substitutions:
   climate_backup_delay: "3"
 captive_portal: !remove
 web_server: !remove
-api:
-  encryption:
-    key: !secret api_encryption
-ota:
-  platform: esphome
-  encryption:
-  allow_partition_access: true
 esp32:
   framework:
     type: esp-idf
@@ -136,9 +115,6 @@ esp32_ble_tracker:
   scan_parameters:
     interval: 100ms
     window: 5ms
-espectre:
-  segmentation_window_size_ms: 1000
-  evaluation_interval_ms: 250
 packages:
   remote_package:
     url: https://github.com/edwardtfn/NSPanel-Easy
@@ -167,7 +143,7 @@ The following keys are available to be used in your `substitutions`. All values 
 | espectre_ref | no | valid ESPectre release tag | "3.0.0"  | ESPectre version control |
 | espectre_direct_api | no | "false" or "true" | "true" | the direct API is used by the ESPectre App |
 | espectre_detection_algorithm | no | "high_accuracy" or "lightweight" | "high_accuracy" | see ESPectre docs |
-| espectre_traffic_generator_mode | no | "wifi_raw", "internal", "external" | "wifi_raw" | "external" if using ESPectre App as traffic generator |
+| espectre_traffic_generator_mode | no | "wifi_raw", "external", etc | "wifi_raw" | "external" if using ESPectre App as traffic generator |
 <!-- markdownlint-enable MD013 MD033 -->
 
 ## Blueprint settings
@@ -180,13 +156,15 @@ Head over to [ESPectre.dev](https://espectre.dev) for details.
 Getting the balance right between traffic modes may take a bit of work.
 
 > [!NOTE]
-> If you have more than a few panels or other devices running ESPectre with default settings you will run the risk of bringing down your home wireless or even your whole home network.
-> Install **ESPectre Manager app for Home Assistant** and use it to make necessary adjustments, setting traffic mode to External to use its multicast traffic generator for example.
+> If you have more than a few panels or other devices running ESPectre with default settings you will want to
+> install **ESPectre Manager app for Home Assistant** and use it to make necessary adjustments, setting traffic mode to External to use its multicast traffic generator for example.
 > Properly configured, there is no problem using a dozen or more panels in combination with **ESPectre Manager**.
 
 ## Bluetooth coexistence 
 
-This combination has been tested successfully, but in the end it was worth adding a dedicated Bluetooth device nearer the washing machine 
+This combination has been tested successfully, but in the end it was worth adding a dedicated Bluetooth device nearer the washing machine rather than rely on this working long term.
+
+This tweak shares airtime without Bluetooth taking too long for its scans and disrupting ESPectre.
 
 ```yaml 
 esp32:
@@ -194,7 +172,7 @@ esp32:
     type: esp-idf
     sdkconfig_options:
       CONFIG_ESP_COEX_SW_COEXIST_ENABLE: n
-      # With Wi-Fi enabled, software_coexistence: false only stops ESPHome from requesting software coexistence, and
+      # With Wi-Fi enabled, software_coexistence: false only stops ESPHome from requesting software coexistence,
       # ESP-IDF still enables it by default when Wi-Fi and Bluetooth are both in use, so this sdkconfig option is needed.
 
 esp32_ble_tracker:
@@ -202,9 +180,5 @@ esp32_ble_tracker:
   scan_parameters:
     interval: 100ms
     window: 5ms
-
-espectre:
-  segmentation_window_size_ms: 1000
-  evaluation_interval_ms: 250
 ```
 
