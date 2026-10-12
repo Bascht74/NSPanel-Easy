@@ -74,7 +74,7 @@ Getting the balance right between traffic modes may take a bit of work.
 > install **ESPectre Manager app for Home Assistant** and use it to make necessary adjustments, setting traffic mode to External to use its multicast traffic generator for example.
 > Properly configured, there is no problem using a dozen or more panels in combination with **ESPectre Manager**.
 
-# Bluetooth coexistence
+## Bluetooth coexistence
 
 This combination has been tested successfully, but for reliable long-term use a dedicated Bluetooth proxy device is recommended.
 
@@ -96,7 +96,7 @@ esp32_ble_tracker:
     window: 5ms
 ```
 
-## Image sizes
+## Image size
 
 Tested with `ESPHome 2026.9.1`, `ESPectre 3.0.0` and `NSPanel-Easy 2026.10.0` with space saving `captive_portal: !remove`, `web_server: !remove`. 
 
