@@ -60,6 +60,17 @@ espectre:
             id: refresh_relays
             relay_mask: 2
 
+ota:
+  # Sensing is paused when an OTA starts (ota_std.on_begin -> stop_all, see below).
+  # A failed or aborted OTA does not reboot the panel, so resume sensing here.
+  - id: !extend ota_std
+    on_abort:
+      then:
+        - lambda: id(espectre_csi).set_sensing_runtime(true);
+    on_error:
+      then:
+        - lambda: id(espectre_csi).set_sensing_runtime(true);
+
 script:
   - id: !extend dump_config
     then:
