@@ -14,10 +14,10 @@ substitutions:
   ## Change only in your      ##
   ## local yaml substitutions ##
   ##############################
-  espectre_ref: "3.0.0"  # ESPectre release this add-on was tested with (override at your own risk)
-  espectre_traffic_generator_mode: "wifi_raw"   # wifi_raw, external, etc.
-  espectre_detection_algorithm: "high_accuracy"   # high_accuracy, lightweight
-  espectre_direct_api: "true"  # see ESPectre documentation
+  espectre_ref: "3.0.0"                          # ESPectre release this add-on was tested with (override at your own risk)
+  espectre_traffic_generator_mode: "wifi_raw"    # ping, dns, dns_tcp, wifi_raw or external
+  espectre_detection_algorithm: "high_accuracy"  # high_accuracy or lightweight
+  espectre_direct_api: "true"                    # see ESPectre documentation
 
 esphome:
   build_flags:
@@ -83,15 +83,20 @@ script:
   # reduce pressure on system during OTA and TFT uploads
   - id: !extend stop_all
     then:
-      - lambda: if (system_flags.tft_upload_active|system_flags.ota_in_progress) { id(espectre_csi).set_sensing_runtime(false); }
+      - lambda: |-
+          if (system_flags.tft_upload_active or system_flags.ota_in_progress) {
+            id(espectre_csi).set_sensing_runtime(false);
+          }
 
   # display/hide the motion sensor icon in chip relay_2
   - id: !extend refresh_relays
     then:
       - lambda: |-
           // chip_relay2 is repurposed to mirror the ESPectre motion sensor
-          // instead of relay 2's own state. This runs after the built-in
-          // lambda, so it overrides whatever that one just wrote.
+          // instead of relay 2's own state. The built-in relay 2 branch is
+          // excluded at build time (NSPANEL_EASY_ADDON_ESPECTRE), so this is
+          // the only writer of that chip.
+          if (system_flags.tft_upload_active) return;  // Skip refresh if TFT update is in progress
           if (!(relay_mask & 2)) return;
           const bool motion = espectre_motion->state;
           if (chip_states[CHIP_IDX_RELAY2].visible == motion) return;
