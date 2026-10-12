@@ -98,14 +98,14 @@ esp32_ble_tracker:
 
 ## Image size
 
-Tested with `ESPHome 2026.9.1`, `ESPectre 3.0.0` and `NSPanel-Easy 2026.10.0` with space saving `captive_portal: !remove`, `web_server: !remove`. 
+Tested with `ESPHome 2026.9.1`, `ESPectre 3.0.0` and `NSPanel-Easy 2026.10.0` with space saving `captive_portal: !remove`, `web_server: !remove`.
 
 ### Summary
 
 <!-- markdownlint-disable MD013 MD033 -->
 | Addon(s) | Image | RAM | Flash | Impact |
 | :- | :-: | :-: | :-: | :- |
-| base package |  |  |  |  |
+| base package | | | | |
 | + ESPectre | 1391455 | 39.9% | 75.8% | easily within capacity on both RAM and Flash |
 | + ESPectre + climate + climate_backup | 1413351 | 40.5% | 77.0% | minimal increase to RAM or Flash |
 | + ESPectre + climate + climate_backup + Bluetooth Proxy | 1813615 | 77.2% | 98.8% | RAM is still OK but very little remaining margin on Flash |
@@ -190,5 +190,3 @@ packages:
 ```
 
 Image size: 1813615 bytes, RAM: 77.2%, Flash: 98.8%
-
-
