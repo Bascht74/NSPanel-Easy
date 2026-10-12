@@ -47,9 +47,90 @@ packages:
       - esphome/nspanel_esphome_addon_espectre.yaml
 ```
 
-## Image size
+## Configuration
 
-Tested with `ESPHome 2026.9.1`, `ESPectre 3.0.0` and `NSPanel-Easy 2026.10.0`
+The following keys are available to be used in your `substitutions`. All values must be delimited with `""`:
+
+<!-- markdownlint-disable MD013 MD033 -->
+| Key | Required | Supported values | Default | Description |
+| :- | :-: | :-: | :-: | :- |
+| espectre_ref | no | valid ESPectre release tag | "3.0.0" | ESPectre version control |
+| espectre_direct_api | no | "false" or "true" | "true" | the direct API is used by the ESPectre App |
+| espectre_detection_algorithm | no | "high_accuracy" or "lightweight" | "high_accuracy" | see ESPectre docs |
+| espectre_traffic_generator_mode | no | "ping", "dns", "dns_tcp", "wifi_raw" or "external" | "wifi_raw" | "external" if using ESPectre App as traffic generator |
+<!-- markdownlint-enable MD013 MD033 -->
+
+## Blueprint settings
+
+In General Settings make sure that `relay 2` has a visible colour and icon - `cyan` and `mdi:motion-sensor` for example.
+
+## ESPectre Manager app for Home Assistant
+
+Head over to [ESPectre.dev](https://espectre.dev) for details.
+Getting the balance right between traffic modes may take a bit of work.
+
+> [!NOTE]
+> If you have more than a few panels or other devices running ESPectre with default settings you will want to
+> install **ESPectre Manager app for Home Assistant** and use it to make necessary adjustments, setting traffic mode to External to use its multicast traffic generator for example.
+> Properly configured, there is no problem using a dozen or more panels in combination with **ESPectre Manager**.
+
+# Bluetooth coexistence
+
+This combination has been tested successfully, but for reliable long-term use a dedicated Bluetooth proxy device is recommended.
+
+This tweak shares airtime without Bluetooth taking too long for its scans and disrupting ESPectre.
+
+```yaml
+esp32:
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP_COEX_SW_COEXIST_ENABLE: n
+      # With Wi-Fi enabled, software_coexistence: false only stops ESPHome from requesting software coexistence,
+      # ESP-IDF still enables it by default when Wi-Fi and Bluetooth are both in use, so this sdkconfig option is needed.
+
+esp32_ble_tracker:
+  software_coexistence: false
+  scan_parameters:
+    interval: 100ms
+    window: 5ms
+```
+
+## Image sizes
+
+Tested with `ESPHome 2026.9.1`, `ESPectre 3.0.0` and `NSPanel-Easy 2026.10.0` with space saving `captive_portal: !remove`, `web_server: !remove`. 
+
+### Summary
+
+<!-- markdownlint-disable MD013 MD033 -->
+| Addon(s) | Image | RAM | Flash | Impact |
+| :- | :-: | :-: | :-: | :- |
+| base package |  |  |  |  |
+| + ESPectre | 1391455 | 39.9% | 75.8% |  |
+| + climate + climate_backup | 1413351 | 40.5% | 77.0% | minimal imcrease |
+| + Bluetooth Proxy | 1813615 | 77.2% | 98.8% | RAM is OK but very little margin for Flash |
+<!-- markdownlint-enable MD013 MD033 -->
+
+> [!NOTE]
+> As both the ESPectre code and the base package gain new features over time, the image size is likely to grow and eventually make ESPectre/Bluetooth Proxy coexistence impossible.
+
+### ESPectre
+
+```yaml
+substitutions:
+  wakeup_with_button_press: true
+captive_portal: !remove
+web_server: !remove
+packages:
+  remote_package:
+    url: https://github.com/edwardtfn/NSPanel-Easy
+    files:
+      - nspanel_esphome.yaml # Base package
+      - esphome/nspanel_esphome_addon_display_light.yaml
+      - esphome/nspanel_esphome_addon_espectre.yaml
+```
+
+Image size: 1391455 bytes, RAM: 39.9%, Flash: 75.8%
 
 ### ESPectre and climate_backup
 
@@ -73,24 +154,6 @@ packages:
 ```
 
 Image size: 1413351 bytes, RAM: 40.5%, Flash: 77.0%
-
-### ESPectre
-
-```yaml
-substitutions:
-  wakeup_with_button_press: true
-captive_portal: !remove
-web_server: !remove
-packages:
-  remote_package:
-    url: https://github.com/edwardtfn/NSPanel-Easy
-    files:
-      - nspanel_esphome.yaml # Base package
-      - esphome/nspanel_esphome_addon_display_light.yaml
-      - esphome/nspanel_esphome_addon_espectre.yaml
-```
-
-Image size: 1391455 bytes, RAM: 39.9%, Flash: 75.8%
 
 ### ESPectre with Bluetooth Proxy and Climate Backup
 
@@ -128,54 +191,4 @@ packages:
 
 Image size: 1813615 bytes, RAM: 77.2%, Flash: 98.8%
 
-> [!NOTE]
-> As both the ESPectre code and the base package gain new features over time, the image size is likely to grow and eventually make ESPectre/Bluetooth Proxy coexistence impossible.
 
-## Configuration
-
-The following keys are available to be used in your `substitutions`. All values must be delimited with `""`:
-
-<!-- markdownlint-disable MD013 MD033 -->
-| Key | Required | Supported values | Default | Description |
-| :- | :-: | :-: | :-: | :- |
-| espectre_ref | no | valid ESPectre release tag | "3.0.0" | ESPectre version control |
-| espectre_direct_api | no | "false" or "true" | "true" | the direct API is used by the ESPectre App |
-| espectre_detection_algorithm | no | "high_accuracy" or "lightweight" | "high_accuracy" | see ESPectre docs |
-| espectre_traffic_generator_mode | no | "ping", "dns", "dns_tcp", "wifi_raw" or "external" | "wifi_raw" | "external" if using ESPectre App as traffic generator |
-<!-- markdownlint-enable MD013 MD033 -->
-
-## Blueprint settings
-
-In General Settings make sure that `relay 2` has a visible colour and icon - `cyan` and `mdi:motion-sensor` for example.
-
-## ESPectre Manager app for Home Assistant
-
-Head over to [ESPectre.dev](https://espectre.dev) for details.
-Getting the balance right between traffic modes may take a bit of work.
-
-> [!NOTE]
-> If you have more than a few panels or other devices running ESPectre with default settings you will want to
-> install **ESPectre Manager app for Home Assistant** and use it to make necessary adjustments, setting traffic mode to External to use its multicast traffic generator for example.
-> Properly configured, there is no problem using a dozen or more panels in combination with **ESPectre Manager**.
-
-## Bluetooth coexistence
-
-This combination has been tested successfully, but for reliable long-term use a dedicated Bluetooth proxy device is recommended.
-
-This tweak shares airtime without Bluetooth taking too long for its scans and disrupting ESPectre.
-
-```yaml
-esp32:
-  framework:
-    type: esp-idf
-    sdkconfig_options:
-      CONFIG_ESP_COEX_SW_COEXIST_ENABLE: n
-      # With Wi-Fi enabled, software_coexistence: false only stops ESPHome from requesting software coexistence,
-      # ESP-IDF still enables it by default when Wi-Fi and Bluetooth are both in use, so this sdkconfig option is needed.
-
-esp32_ble_tracker:
-  software_coexistence: false
-  scan_parameters:
-    interval: 100ms
-    window: 5ms
-```
