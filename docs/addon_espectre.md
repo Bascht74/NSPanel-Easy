@@ -3,24 +3,25 @@
 ## Description
 
 This add-on enables the use of your panel's Wi-Fi traffic to act as a motion sensor using the
-ESPectre module - see [ESPectre.dev](https://espectre.dev) for the details of how the module works and for license conditions.
+ESPectre module. See [ESPectre.dev](https://espectre.dev) for details on how the module works and for its license conditions.
 
 If the display is blank, and motion is detected, the display wakes up.
 
-For best results you will need to make adjustments in _Home Assistant > Settings > Devices > ESPhome_ for each panel and calibrate with no-one in the room.
+For best results you will need to make adjustments in _Home Assistant > Settings > Devices > ESPHome_ for each panel and calibrate with no-one in the room.
 
 ### Attention
 
-1. The NSPanel is capable of running this addon in addition to everything else it is doing.
-   Be kind to it and keep an eye on the image size when building. If you have too many addons, you might need to choose.
-   It is particularly asking a lot to use Bluetooth at the same time as WiFi motion detection as they use the same airspace as well as the same NSPanel.
-   The tweaks documented below make some necessary compromises to allow both to work together, but the combination is not recommended. 
-2. The ESPectre addon makes use of the display item normally reserved for RELAY 2 and lights it up during motion detection.
-   If _you are also using the second relay_, expect the unexpected 😃
+1. The NSPanel is capable of running this add-on in addition to everything else it is doing.
+   Be kind to it and keep an eye on the image size when building. If you have too many add-ons, you might need to choose.
+   It is particularly demanding to use Bluetooth at the same time as Wi-Fi motion detection, as they share the same radio and airtime.
+   The tweaks documented below make some necessary compromises to allow both to work together, but the combination is not recommended.
+2. This add-on repurposes the status icon (chip) normally used for **relay 2**: it shows motion instead of the relay state.
+   The relay itself keeps working, but its state is no longer shown on the display.
+   Consider this before combining it with add-ons that use relay 2, such as [Cover](addon_cover.md) or a climate backup relay on relay 2 ([Climate](addon_climate.md)).
 
 ## Installation
 
-Add the reference to `addon_espectre` in your ESPHome settings in the `package` section after the `remote_package` (base code), as shown below:
+Add the reference to `addon_espectre` in your ESPHome settings in the `packages` section after the `remote_package` (base code), as shown below:
 
 ```yaml
 substitutions:
@@ -48,7 +49,7 @@ packages:
 
 ## Image size
 
-Testing with `ESPhome 2026.9.1`, `ESPectre 3.0.0` and `NSPanel-Easy 2026.10.0`
+Tested with `ESPHome 2026.9.1`, `ESPectre 3.0.0` and `NSPanel-Easy 2026.10.0`
 
 ### ESPectre and climate_backup
 
@@ -56,7 +57,7 @@ Testing with `ESPhome 2026.9.1`, `ESPectre 3.0.0` and `NSPanel-Easy 2026.10.0`
 substitutions:
   wakeup_with_button_press: true
   backup_heater_relay: "1"
-  backup_cooler_relay: "2"
+  backup_cooler_relay: "0"  # Relay 2 status icon is used by ESPectre
   climate_backup_delay: "3"
 captive_portal: !remove
 web_server: !remove
@@ -70,9 +71,8 @@ packages:
       - esphome/nspanel_esphome_addon_climate_dual.yaml
       - esphome/nspanel_esphome_addon_espectre.yaml
 ```
-Image size: 1413351 bytes,
-RAM: 40.5%,
-Flash: 77.0%
+
+Image size: 1413351 bytes, RAM: 40.5%, Flash: 77.0%
 
 ### ESPectre
 
@@ -89,9 +89,8 @@ packages:
       - esphome/nspanel_esphome_addon_display_light.yaml
       - esphome/nspanel_esphome_addon_espectre.yaml
 ```
-Image size: 1391455 bytes,
-RAM: 39.9%,
-Flash: 75.8%
+
+Image size: 1391455 bytes, RAM: 39.9%, Flash: 75.8%
 
 ### ESPectre with Bluetooth Proxy and Climate Backup
 
@@ -99,7 +98,7 @@ Flash: 75.8%
 substitutions:
   wakeup_with_button_press: true
   backup_heater_relay: "1"
-  backup_cooler_relay: "2"
+  backup_cooler_relay: "0"  # Relay 2 status icon is used by ESPectre
   climate_backup_delay: "3"
 captive_portal: !remove
 web_server: !remove
@@ -126,12 +125,11 @@ packages:
       - esphome/nspanel_esphome_addon_espectre.yaml
       - esphome/nspanel_esphome_addon_bluetooth_proxy.yaml
 ```
-Image size: 1813615 bytes,
-RAM: 77.2%,
-Flash: 98.8%
+
+Image size: 1813615 bytes, RAM: 77.2%, Flash: 98.8%
 
 > [!NOTE]
-> As both the ESPectre code and the base package gain new features over time, Image size is likely to grow and eventually make ESPectre/Bluetooth Proxy coexistence impossible. 
+> As both the ESPectre code and the base package gain new features over time, the image size is likely to grow and eventually make ESPectre/Bluetooth Proxy coexistence impossible.
 
 ## Configuration
 
@@ -140,15 +138,15 @@ The following keys are available to be used in your `substitutions`. All values 
 <!-- markdownlint-disable MD013 MD033 -->
 | Key | Required | Supported values | Default | Description |
 | :- | :-: | :-: | :-: | :- |
-| espectre_ref | no | valid ESPectre release tag | "3.0.0"  | ESPectre version control |
+| espectre_ref | no | valid ESPectre release tag | "3.0.0" | ESPectre version control |
 | espectre_direct_api | no | "false" or "true" | "true" | the direct API is used by the ESPectre App |
 | espectre_detection_algorithm | no | "high_accuracy" or "lightweight" | "high_accuracy" | see ESPectre docs |
-| espectre_traffic_generator_mode | no | "wifi_raw", "external", etc | "wifi_raw" | "external" if using ESPectre App as traffic generator |
+| espectre_traffic_generator_mode | no | "ping", "dns", "dns_tcp", "wifi_raw" or "external" | "wifi_raw" | "external" if using ESPectre App as traffic generator |
 <!-- markdownlint-enable MD013 MD033 -->
 
 ## Blueprint settings
 
-In General Settings make sure that `relay 2` has a visible colour and icon - `cyan` and `mdi:motion-sensor` for example 
+In General Settings make sure that `relay 2` has a visible colour and icon - `cyan` and `mdi:motion-sensor` for example.
 
 ## ESPectre Manager app for Home Assistant
 
@@ -160,13 +158,13 @@ Getting the balance right between traffic modes may take a bit of work.
 > install **ESPectre Manager app for Home Assistant** and use it to make necessary adjustments, setting traffic mode to External to use its multicast traffic generator for example.
 > Properly configured, there is no problem using a dozen or more panels in combination with **ESPectre Manager**.
 
-## Bluetooth coexistence 
+## Bluetooth coexistence
 
-This combination has been tested successfully, but in the end it was worth adding a dedicated Bluetooth device nearer the washing machine rather than rely on this working long term.
+This combination has been tested successfully, but for reliable long-term use a dedicated Bluetooth proxy device is recommended.
 
 This tweak shares airtime without Bluetooth taking too long for its scans and disrupting ESPectre.
 
-```yaml 
+```yaml
 esp32:
   framework:
     type: esp-idf
@@ -181,4 +179,3 @@ esp32_ble_tracker:
     interval: 100ms
     window: 5ms
 ```
-
