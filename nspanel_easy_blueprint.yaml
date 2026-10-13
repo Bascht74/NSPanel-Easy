@@ -7317,6 +7317,7 @@ actions:
       - stop: Blueprint API version is older than the ESPHome firmware API version
 
   - alias: Global anchor repository
+    enabled: false  # Anchor holder only; never executed, and skipped by static checks (e.g. Spook)
     if: '{{ false }}'  # It should never execute directly
     then:
       - &delay_default
