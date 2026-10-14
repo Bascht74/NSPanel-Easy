@@ -12,7 +12,7 @@
 ---
 substitutions:
   BUTTON_LONG_PRESS_DELAY: 800ms
-  BUTTON_RENDER_QUEUE_TIMEOUT: 300ms  # Max wait for the Nextion queue to drain before rendering a button
+  BUTTON_RENDER_QUEUE_TIMEOUT: 25ms  # Max wait for the Nextion queue to drain before rendering a button
   TAG_PAGE_BUTTONS: nspanel.page.buttons
   THEME_PAGE_BUTTONS_DARK_PIC_BUTTON: 46
   THEME_PAGE_BUTTONS_DARK_PIC_PRESSED: 47
