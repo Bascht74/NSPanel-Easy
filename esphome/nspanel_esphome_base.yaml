@@ -88,6 +88,13 @@ ota:
         - lambda: |-
             system_flags.ota_in_progress = true;
             stop_all->execute();
+    # A failed or aborted OTA does not reboot the panel, so clear the flag to re-enable the watchdog
+    on_abort:
+      then:
+        - lambda: system_flags.ota_in_progress = false;
+    on_error:
+      then:
+        - lambda: system_flags.ota_in_progress = false;
 
 safe_mode:
   id: safe_mode_component
