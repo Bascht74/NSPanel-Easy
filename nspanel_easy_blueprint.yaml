@@ -12087,7 +12087,25 @@ actions:
                               # ── Raw attributes ────────────────────────────
                               entity_state: '{{ states(entity_id) }}'
                               supported_features: '{{ state_attr(entity_id, "supported_features") | int(0) }}'
-                              battery_level: '{{ state_attr(entity_id, "battery_level") | int(-1) }}'
+                              # Home Assistant 2026.9 moved the vacuum battery from the battery_level attribute to a battery sensor of the device
+                              battery_level: >-
+                                {% set battery_attribute = state_attr(entity_id, "battery_level") %}
+                                {% set device = device_id(entity_id) %}
+                                {% set battery_values = (device_entities(device) if device else [])
+                                    | select("match", "sensor\\.")
+                                    | select("is_state_attr", "device_class", "battery")
+                                    | map("states")
+                                    | select("is_number")
+                                    | map("float")
+                                    | list %}
+                                {# Round half up (+0.5 then truncate); battery levels are never negative #}
+                                {% if is_number(battery_attribute) %}
+                                  {{ (battery_attribute | float + 0.5) | int }}
+                                {% elif battery_values | count > 0 %}
+                                  {{ (battery_values | first + 0.5) | int }}
+                                {% else %}
+                                  -1
+                                {% endif %}
 
                               # ── State groups ─────────────────────────────
                               is_active: >-
@@ -12102,7 +12120,7 @@ actions:
                               has_pause: '{{ not is_mower and supported_features | bitwise_and(4) > 0 }}'
                               has_stop: '{{ not is_mower and supported_features | bitwise_and(8) > 0 }}'
                               has_return_home: '{{ not is_mower and supported_features | bitwise_and(16) > 0 }}'
-                              has_battery: '{{ not is_mower and supported_features | bitwise_and(64) > 0 }}'
+                              has_battery: '{{ battery_level >= 0 }}'
 
                               # ── Mower feature flags ───────────────────────
                               mower_has_start: '{{ is_mower and supported_features | bitwise_and(1) > 0 }}'
