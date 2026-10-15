@@ -77,6 +77,16 @@ ota:
     password: !remove
   - id: ota_http
     platform: http_request
+    # The download blocks the main loop, so show the same dialog as for ota_std
+    on_begin:
+      then:
+        - script.execute: ota_dialog_open
+    on_abort:
+      then:
+        - script.execute: ota_dialog_close
+    on_error:
+      then:
+        - script.execute: ota_dialog_close
 
 text:
   - id: fw_url
