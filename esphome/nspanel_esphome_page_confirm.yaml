@@ -17,24 +17,10 @@ esphome:
 ota:
   # The main loop is blocked while the OTA data is received, so the panel cannot react to touches.
   # Show a dialog when the display is awake, so the user knows an update is in progress.
-  # The page name "tft_upload" is reused as it hides the dialog buttons and keeps the page when the API is offline.
   - id: !extend ota_std
     on_begin:
       then:
-        - lambda: |-
-            if (system_flags.tft_upload_active) return;  // TFT upload dialog is already shown
-            if (current_page_id == get_page_id("screensaver")) {
-              ESP_LOGD("${TAG_PAGE_CONFIRM}", "OTA started while sleeping - no dialog");
-              return;
-            }  // if (current_page_id == get_page_id("screensaver"))
-            if (current_page_id == get_page_id("boot")) {
-              disp1->send_command("tm_esphome.en=0");  // Stop updates from boot page
-            }  // if (current_page_id == get_page_id("boot"))
-            ESP_LOGD("${TAG_PAGE_CONFIRM}", "Open OTA dialog");
-            disp1->set_component_text("confirm.page_name", "tft_upload");
-            disp1->set_component_text("confirm.title", "NSPanel Easy");
-            disp1->set_component_text("confirm.body", "Firmware update");
-            goto_page->execute(get_page_id("confirm"));
+        - script.execute: ota_dialog_open
     on_abort:
       then:
         - script.execute: ota_dialog_close
@@ -43,6 +29,36 @@ ota:
         - script.execute: ota_dialog_close
 
 script:
+  - id: ota_dialog_open  # Shows the update dialog when an OTA begins and the display is awake
+    mode: restart
+    then:
+      - lambda: |-
+          if (system_flags.tft_upload_active) return;  // TFT upload dialog is already shown
+          if (!disp1->is_setup()) return;  // No display to show the dialog
+          if (current_page_id == get_page_id("screensaver")) {
+            ESP_LOGD("${TAG_PAGE_CONFIRM}", "OTA started while sleeping - no dialog");
+            return;
+          }  // if (current_page_id == get_page_id("screensaver"))
+          ESP_LOGD("${TAG_PAGE_CONFIRM}", "Open OTA dialog");
+          // Write directly to the UART: the Nextion component paces its commands from the main loop, which the OTA
+          // blocks right after this, so queued commands would only be sent when the OTA ends.
+          auto send_raw = [](const char *cmd) {
+            static const uint8_t TERMINATOR[3] = {0xFF, 0xFF, 0xFF};
+            tf_uart->write_str(cmd);
+            tf_uart->write_array(TERMINATOR, sizeof(TERMINATOR));
+          };
+          send_raw("bkcmd=0");  // No replies, as these commands are not tracked by the Nextion component queue
+          // The page name "tft_upload" hides the dialog buttons and keeps the page when the API is offline
+          send_raw("confirm.page_name.txt=\"tft_upload\"");
+          send_raw("confirm.title.txt=\"NSPanel Easy\"");
+          send_raw("confirm.body.txt=\"Firmware update\"");
+          // Sent even when confirm is the current page, so its Preinitialize event runs again and hides the buttons
+          char page_cmd[12];
+          snprintf(page_cmd, sizeof(page_cmd), "page %" PRIu8, get_page_id("confirm"));
+          send_raw(page_cmd);
+          send_raw("bkcmd=3");  // Restore the reply level used by the Nextion component
+          tf_uart->flush();
+
   - id: ota_dialog_close  # Leaves the OTA dialog after a failed or aborted OTA
     mode: restart
     then:
