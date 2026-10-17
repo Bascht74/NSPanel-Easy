@@ -53,9 +53,9 @@ Nextion-supported baud rates to find one where the display answers.
 
 - The display is not detected at the configured `BAUD_RATE` within
   `BAUD_RATE_TIMEOUT` after boot.
-- A watchdog round (every 89 seconds) finds the display not detected and it
-  does not respond within `BAUD_RATE_TIMEOUT` after being power-cycled. This
-  also re-triggers the scan if the display continues to be unresponsive.
+- A watchdog round finds the display not detected and it does not respond
+  within `BAUD_RATE_TIMEOUT` after being power-cycled. From then on, the
+  power-cycle and scan are repeated until the display answers.
 - A TFT upload starts while the display is not detected. If no rate answers,
   the upload is aborted instead of being sent at an unknown rate.
 
@@ -82,8 +82,7 @@ legacy TFTs.
   session and a TFT upload at the discovered rate will realign the link on
   the next boot.
 - **No match**: the panel power-cycles the display and repeats the wait-and-scan
-  cycle on the following watchdog rounds. The display never enters a stranded
-  state.
+  cycle indefinitely. The display never enters a stranded state.
 
 ### Timing
 
