@@ -29,16 +29,19 @@ Follow these guidelines carefully to ensure a smooth and consistent release proc
 
 3. **Create a new branch with the version name**:
    - After updating the version in all required files, create a new branch from the `dev` branch with the new version number prefixed with `v`:
+
      ```bash
      git checkout dev
      git pull origin dev
      git checkout -b vX.X.X
      git push origin vX.X.X
      ```
+
    - This branch ensures the `external_components` are validated correctly during testing.
 
 4. **Merge changes back to `dev`**:
    - After making the changes, merge them back into the `dev` branch to trigger the CI/CD actions and validate the build process:
+
      ```bash
      git checkout dev
      git merge vX.X.X
