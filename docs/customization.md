@@ -236,6 +236,7 @@ It requires ESPHome 2026.9.0 or newer.
 
 > [!IMPORTANT]
 > Once a panel runs firmware with OTA encryption required, it refuses plaintext OTA updates.
+> The encryption applies to the ESPHome OTA (`ota_std`) only, not to the HTTP OTA used by the prebuilt firmware to download its updates.
 > If the key is lost, the panel can only be recovered with a serial flash.
 
 Enable it in two steps, as described in ESPHome's

@@ -340,9 +340,13 @@ In the last step, assign the trigger to a button in the Panel Config.
 
 ### Overview
 
-When you update your Wi-Fi password in a device with firmware from our project,
-it's important to remember that the `wifi_password` substitution is used for both Wi-Fi and OTA updates (and a few more places that are not relevant now).
-Failing to update both simultaneously can lead to connection issues.
+The OTA password is set by the `ota_password` substitution, which is blank by default.
+If your panel uses a blank `ota_password` or a password of its own, changing the Wi-Fi password does not affect the OTA updates:
+change the `wifi_ssid` and `wifi_password` substitutions, flash your device, and then update your access point.
+
+If your `ota_password` is set to `${wifi_password}` (as suggested in the migration guide),
+the OTA password also changes with the Wi-Fi password, so both must be updated together, as described below.
+Failing to do so can lead to connection issues.
 
 ### Step-by-Step Guide
 
@@ -360,9 +364,6 @@ Failing to update both simultaneously can lead to connection issues.
            then:
              - lambda: |-
                  id(ota_std).set_auth_password("Your new Wi-Fi password");
-     ota:
-       - id: !extend ota_std
-         password: "Your current Wi-Fi password"
      ```
 
    * Flash your device.
