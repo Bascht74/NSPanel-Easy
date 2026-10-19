@@ -318,7 +318,7 @@ section in the installation guide for detailed instructions.
 ## Boot baud rate scan
 
 If the display does not respond at the configured baud rate (default 921600 bps) within
-11 seconds of boot, the panel automatically scans all Nextion-supported baud rates to
+a couple of minutes of boot, the panel automatically scans all Nextion-supported baud rates to
 find one where the display answers. This recovers panels in the following situations:
 
 - A previous TFT upload was interrupted, leaving the display at an unexpected rate

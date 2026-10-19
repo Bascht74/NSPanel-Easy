@@ -45,14 +45,14 @@ realigns the two sides.
 
 ## Boot baud rate scan
 
-If the display does not respond at `BAUD_RATE` within `BAUD_RATE_TIMEOUT`
-(11 seconds by default) after boot, the panel automatically scans
-Nextion-supported baud rates to find one where the display answers.
+If the display does not respond at `BAUD_RATE` within a couple of minutes of
+boot, the panel automatically scans Nextion-supported baud rates to find one
+where the display answers.
 
 ### When the scan triggers
 
-- The display is not detected at the configured `BAUD_RATE` within
-  `BAUD_RATE_TIMEOUT` after boot.
+- The display is not detected at the configured `BAUD_RATE` shortly after
+  boot (see `BAUD_RATE_TIMEOUT`).
 - A watchdog round finds the display not detected and it does not respond
   within `BAUD_RATE_TIMEOUT` after being power-cycled. From then on, the
   power-cycle and scan are repeated until the display answers.
