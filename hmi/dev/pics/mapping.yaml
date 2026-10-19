@@ -1123,6 +1123,18 @@
   light: null
   copy: true
   placeholder: true
+- id: unused_65
+  note: "Unused - replaced with 1x1 placeholder to reclaim HMI flash space."
+  dark: 65
+  light: null
+  copy: true
+  placeholder: true
+- id: unused_66
+  note: "Unused - replaced with 1x1 placeholder to reclaim HMI flash space."
+  dark: 66
+  light: null
+  copy: true
+  placeholder: true
 
 # -----------------------------------------------------------------------------
 # Pending review - candidates for removal if not needed for future features
