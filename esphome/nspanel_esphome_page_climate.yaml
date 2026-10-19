@@ -70,6 +70,11 @@ display:
               goto_page->execute(get_page_id("climate"));
               return;
             }
+            if (page_id == get_page_id("climate") and              // Page `climate`
+                component_id == hmi::climate::PRESET_BUTTON.id) {  // Preset mode button
+              climate_preset_open->execute();
+              return;
+            }
 
 esphome:
   build_flags:
@@ -115,6 +120,20 @@ script:
             });
             return;
           }
+
+  # Opens the preset picker for the climate shown on the page.
+  # For Home Assistant entities, the options were pushed by the Blueprint when the page was constructed.
+  # The climate add-on extends this for the embedded thermostat.
+  - id: climate_preset_open
+    mode: single
+    then:
+      - lambda: |-
+          ESP_LOGV("${TAG_PAGE_CLIMATE}", "Script: climate_preset_open");
+          if (climate_embedded_visible) return;  // Handled by the climate add-on
+          popup_select_open->execute(
+            get_page_id("climate"),
+            std::string("${LOCALIZATION[LANG].climate.select_preset_mode}")
+          );
 
   - id: !extend event_from_display  # Defined by hw_display
     then:
@@ -162,6 +181,28 @@ script:
   - id: page_climate
     mode: single
     then:  # There's nothing here so far
+
+  - id: !extend picker_selected  # Defined by page_popup_select
+    then:
+      - lambda: |-
+          if (context != CLIMATE_PRESET_MODE_CONTEXT) return;
+          if (entity == "${CLIMATE_EMBEDDED_SENTINEL}") return;  // Handled by the climate add-on
+
+          if (mask == 0) {
+            // Not every climate offers a preset to clear the selection, so a deselect tap is a no-op
+            ESP_LOGV("${TAG_PAGE_CLIMATE}", "climate_preset_mode deselect ignored");
+            return;
+          }
+
+          ESP_LOGD("${TAG_PAGE_CLIMATE}", "Dispatch: climate.set_preset_mode entity='%s' preset_mode='%s'", entity.c_str(),
+                                                                                                            value.c_str());
+
+          fire_ha_event("action_call", {
+            {"action", "climate.set_preset_mode"},
+            {"entity", entity.c_str()},
+            {"key", "preset_mode"},
+            {"value", value.c_str()}
+          });
 
   - id: !extend reset_globals
     then:
@@ -319,7 +360,9 @@ script:
 
   - id: !extend stop_all
     then:
-      - lambda: change_climate_state->stop();
+      - lambda: |-
+          change_climate_state->stop();
+          climate_preset_open->stop();
 
   - id: !extend stop_page_constructors
     then:

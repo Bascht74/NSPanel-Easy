@@ -10578,6 +10578,91 @@ actions:
                                       continue_on_error: true
                                     - *delay_default
 
+                          ##### Preset mode #####
+                          - &climate-update_preset
+                            # The embedded thermostat is drawn by ESPHome, which also builds its preset
+                            # picker, so the picker keeps working with the API disconnected.
+                            if: '{{ climate_entity != thermostat_embedded }}'
+                            then:
+                              - variables:
+                                  preset_modes_attr: '{{ state_attr(climate_entity, "preset_modes") }}'
+                                  current_preset_mode_raw: '{{ state_attr(climate_entity, "preset_mode") }}'
+                              - variables:
+                                  preset_modes_raw: >
+                                    {{
+                                      preset_modes_attr
+                                      if
+                                        state_attr(climate_entity, "supported_features") | int(0) | bitwise_and(16) > 0 and
+                                        preset_modes_attr is defined and
+                                        preset_modes_attr is iterable and
+                                        preset_modes_attr is not string
+                                      else []
+                                    }}
+                                  current_preset_mode: >-
+                                    {{
+                                      current_preset_mode_raw | trim
+                                      if current_preset_mode_raw is defined and current_preset_mode_raw is string and current_preset_mode_raw | length > 0
+                                      else ""
+                                    }}
+
+                              ##### Construction-only: push options + show preset button #####
+                              - if: '{{ page_constructor }}'
+                                then:
+                                  - if: '{{ preset_modes_raw | length > 0 }}'
+                                    then:
+                                      - variables:
+                                          # The picker pages through up to 32 options; current is always included
+                                          preset_modes_truncated: >
+                                            {%- if preset_modes_raw | length <= 32 -%}
+                                              {{ preset_modes_raw }}
+                                            {%- elif current_preset_mode | length == 0 or current_preset_mode in preset_modes_raw[:32] -%}
+                                              {{ preset_modes_raw[:32] }}
+                                            {%- else -%}
+                                              {{ [current_preset_mode] + (preset_modes_raw[:31] | reject("equalto", current_preset_mode) | list) }}
+                                            {%- endif -%}
+                                      - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                        data:
+                                          page: mem
+                                          id: popup_select_context
+                                          txt_list:
+                                            - 'climate_preset_mode'
+                                        continue_on_error: true
+                                      - *delay_default
+                                      - action: 'esphome.{{ action_prefix }}_component_val'
+                                        data:
+                                          page: mem
+                                          id: popup_select_mode
+                                          val: 0
+                                        continue_on_error: true
+                                      - *delay_default
+                                      - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                        data:
+                                          page: mem
+                                          id: popup_select_options
+                                          txt_list: '{{ preset_modes_truncated }}'
+                                        continue_on_error: true
+                                      - *delay_default
+                                  - action: 'esphome.{{ action_prefix }}_components_visibility'
+                                    data:
+                                      page: climate
+                                      ids:
+                                        - preset_button
+                                      visible: '{{ preset_modes_raw | length > 0 }}'
+                                    continue_on_error: true
+                                  - *delay_default
+
+                              ##### Always (construction and updates): push current preset_mode #####
+                              - if: '{{ preset_modes_raw | length > 0 }}'
+                                then:
+                                  - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                    data:
+                                      page: mem
+                                      id: popup_select_current
+                                      txt_list:
+                                        - '{{ current_preset_mode }}'
+                                    continue_on_error: true
+                                  - *delay_default
+
                           - &climate_custom_buttons
                             alias: Climate custom buttons
                             sequence:
@@ -13428,6 +13513,7 @@ actions:
                   hvac_modes: '{{ state_attr(climate_entity, "hvac_modes") }}'
               - *climate-update_slider
               - *climate-update_buttons
+              - *climate-update_preset
 
       - alias: Update climate page custom buttons
         conditions:
