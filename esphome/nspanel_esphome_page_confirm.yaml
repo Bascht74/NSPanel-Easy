@@ -56,7 +56,8 @@ script:
           char page_cmd[12];
           snprintf(page_cmd, sizeof(page_cmd), "page %" PRIu8, get_page_id("confirm"));
           send_raw(page_cmd);
-          send_raw("bkcmd=3");  // Restore the reply level used by the Nextion component
+          // bkcmd=3 is restored by ota_dialog_close (or by the display setup after the reboot). Sent here, its reply
+          // would reach the Nextion component after the OTA without a matching command and remove a queued one.
           tf_uart->flush();
 
   - id: ota_dialog_close  # Leaves the OTA dialog after a failed or aborted OTA
@@ -64,10 +65,19 @@ script:
     then:
       - lambda: |-
           if (system_flags.tft_upload_active) return;  // Dialog belongs to the TFT upload
+          if (!disp1->is_setup()) return;  // Dialog was not shown
           // The page change to confirm may still be queued, so current_page_id can still hold the page before the dialog
           const uint8_t return_page_id = (current_page_id == get_page_id("confirm")) ? last_page_id : current_page_id;
           if (return_page_id == get_page_id("screensaver")) return;  // Dialog was not shown
           ESP_LOGD("${TAG_PAGE_CONFIRM}", "Close OTA dialog");
+          // Restore the reply level used by the Nextion component (ota_dialog_open set bkcmd=0).
+          // Queued, so its reply is matched to a sent command and cannot remove the page change below.
+          if (!disp1->send_command("bkcmd=3")) {
+            // The component refuses commands while the display is sleeping, so write it directly
+            static const uint8_t TERMINATOR[3] = {0xFF, 0xFF, 0xFF};
+            tf_uart->write_str("bkcmd=3");
+            tf_uart->write_array(TERMINATOR, sizeof(TERMINATOR));
+          }  // if (!disp1->send_command("bkcmd=3"))
           // Bypass goto_page, as it refuses a page that matches an outdated current_page_id
           disp1->goto_page(return_page_id);
 

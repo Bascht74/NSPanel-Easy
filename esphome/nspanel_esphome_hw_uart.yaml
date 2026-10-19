@@ -265,7 +265,10 @@ script:
     then:
       - lambda: |-
           baud_check_at_boot->stop();
-          baud_scan->stop();
+          if (baud_scan->is_running()) {
+            baud_scan->stop();
+            screen_power->turn_on();  // The scan may have been stopped while the display was powered off
+          }  // if (baud_scan->is_running())
           wait_for_uart_drain->stop();
 
   - id: wait_for_uart_drain
