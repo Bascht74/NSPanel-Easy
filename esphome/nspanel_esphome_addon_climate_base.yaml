@@ -400,11 +400,6 @@ script:
             ESP_LOGW("${TAG_ADDON_CLIMATE}", "Embedded thermostat has no presets");
             return;
           }
-          if (options.size() > POPUP_SELECT_MAX_OPTIONS) {
-            ESP_LOGW("${TAG_ADDON_CLIMATE}", "Embedded thermostat has %zu presets, picker supports %" PRIu8 "; truncating",
-                                              options.size(), POPUP_SELECT_MAX_OPTIONS);
-            options.resize(POPUP_SELECT_MAX_OPTIONS);
-          }
 
           // Current preset, by the same name it has in the options
           std::string current;
@@ -415,6 +410,17 @@ script:
             current = climate_preset_names[static_cast<uint8_t>(thermostat_embedded->preset.value())];
           }  // if (thermostat_embedded->has_custom_preset())
           ESP_LOGV("${TAG_ADDON_CLIMATE}", "  current: %s", current.c_str());
+
+          if (options.size() > POPUP_SELECT_MAX_OPTIONS) {
+            ESP_LOGW("${TAG_ADDON_CLIMATE}", "Embedded thermostat has %zu presets, picker supports %" PRIu8 "; truncating",
+                                              options.size(), POPUP_SELECT_MAX_OPTIONS);
+            // Keep the current preset in the list, as the Blueprint does for Home Assistant entities
+            const auto it = std::find(options.begin(), options.end(), current);
+            if (it != options.end() and std::distance(options.begin(), it) >= POPUP_SELECT_MAX_OPTIONS) {
+              std::rotate(options.begin(), it, it + 1);  // Move the current preset to the front
+            }  // if (it != options.end() and std::distance(options.begin(), it) >= POPUP_SELECT_MAX_OPTIONS)
+            options.resize(POPUP_SELECT_MAX_OPTIONS);
+          }  // if (options.size() > POPUP_SELECT_MAX_OPTIONS)
 
           // Fill the picker cache, as the Blueprint does for Home Assistant entities
           popup_select_cache_entity = "${CLIMATE_EMBEDDED_SENTINEL}";
