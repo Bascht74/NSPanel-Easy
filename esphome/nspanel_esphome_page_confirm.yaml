@@ -16,7 +16,7 @@ esphome:
 
 ota:
   # The main loop is blocked while the OTA data is received, so the panel cannot react to touches.
-  # Show a dialog when the display is awake, so the user knows an update is in progress.
+  # Show a dialog, also on the screensaver page, so the user knows an update is in progress.
   - id: !extend ota_std
     on_begin:
       then:
@@ -34,16 +34,14 @@ ota:
         - script.execute: ota_dialog_close
 
 script:
-  - id: ota_dialog_open  # Shows the update dialog when an OTA begins and the display is awake
+  - id: ota_dialog_open  # Shows the update dialog when an OTA begins
     mode: restart
     then:
       - lambda: |-
           if (system_flags.tft_upload_active) return;  // TFT upload dialog is already shown
           if (!disp1->is_setup()) return;  // No display to show the dialog
-          if (current_page_id == get_page_id("screensaver")) {
-            ESP_LOGD("${TAG_PAGE_CONFIRM}", "OTA started while sleeping - no dialog");
-            return;
-          }  // if (current_page_id == get_page_id("screensaver"))
+          // Also shown on the screensaver page: the confirm page restores the brightness, and the panel reboots
+          // to the boot page after a successful OTA anyway
           ESP_LOGD("${TAG_PAGE_CONFIRM}", "Open OTA dialog");
           // Write directly to the UART: the Nextion component paces its commands from the main loop, which the OTA
           // blocks right after this, so queued commands would only be sent when the OTA ends.
@@ -87,7 +85,7 @@ script:
     mode: restart
     then:
       - lambda: |-
-          // Not set when the dialog was skipped (TFT upload, display not set up or screensaver page)
+          // Not set when the dialog was skipped (TFT upload or display not set up)
           if (!system_flags.ota_dialog_shown) return;
           system_flags.ota_dialog_shown = false;
           // The page change to confirm may still be queued, so current_page_id can still hold the page before the dialog
