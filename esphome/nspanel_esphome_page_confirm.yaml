@@ -21,6 +21,11 @@ ota:
     on_begin:
       then:
         - script.execute: ota_dialog_open
+    on_progress:
+      then:
+        - script.execute:
+            id: ota_dialog_progress
+            progress: !lambda return x;
     on_abort:
       then:
         - script.execute: ota_dialog_close
@@ -50,8 +55,8 @@ script:
           send_raw("bkcmd=0");  // No replies, as these commands are not tracked by the Nextion component queue
           // The page name "tft_upload" hides the dialog buttons and keeps the page when the API is offline
           send_raw("confirm.page_name.txt=\"tft_upload\"");
-          send_raw("confirm.title.txt=\"NSPanel Easy\"");
-          send_raw("confirm.body.txt=\"Firmware update\"");
+          send_raw("confirm.title.txt=\"Firmware update\"");
+          send_raw("confirm.body.txt=\"0%\"");  // Updated by ota_dialog_progress
           // Sent even when confirm is the current page, so its Preinitialize event runs again and hides the buttons
           char page_cmd[12];
           snprintf(page_cmd, sizeof(page_cmd), "page %" PRIu8, get_page_id("confirm"));
@@ -59,16 +64,34 @@ script:
           // bkcmd=3 is restored by ota_dialog_close (or by the display setup after the reboot). Sent here, its reply
           // would reach the Nextion component after the OTA without a matching command and remove a queued one.
           tf_uart->flush();
+          system_flags.ota_dialog_shown = true;
+
+  - id: ota_dialog_progress  # Shows the OTA progress (%) in the dialog
+    mode: restart
+    parameters:
+      progress: float  # Percentage reported by the OTA (0 to 100)
+    then:
+      - lambda: |-
+          if (!system_flags.ota_dialog_shown) return;  // Dialog was not shown
+          // Truncated, so 100% is only shown when all the data was received
+          const uint8_t percent = static_cast<uint8_t>(std::clamp(progress, 0.0f, 100.0f));
+          // Written directly to the UART, as in ota_dialog_open (the OTA blocks the main loop)
+          static const uint8_t TERMINATOR[3] = {0xFF, 0xFF, 0xFF};
+          char body_cmd[32];
+          snprintf(body_cmd, sizeof(body_cmd), "confirm.body.txt=\"%" PRIu8 "%%\"", percent);
+          tf_uart->write_str(body_cmd);
+          tf_uart->write_array(TERMINATOR, sizeof(TERMINATOR));
+          tf_uart->flush();
 
   - id: ota_dialog_close  # Leaves the OTA dialog after a failed or aborted OTA
     mode: restart
     then:
       - lambda: |-
-          if (system_flags.tft_upload_active) return;  // Dialog belongs to the TFT upload
-          if (!disp1->is_setup()) return;  // Dialog was not shown
+          // Not set when the dialog was skipped (TFT upload, display not set up or screensaver page)
+          if (!system_flags.ota_dialog_shown) return;
+          system_flags.ota_dialog_shown = false;
           // The page change to confirm may still be queued, so current_page_id can still hold the page before the dialog
           const uint8_t return_page_id = (current_page_id == get_page_id("confirm")) ? last_page_id : current_page_id;
-          if (return_page_id == get_page_id("screensaver")) return;  // Dialog was not shown
           ESP_LOGD("${TAG_PAGE_CONFIRM}", "Close OTA dialog");
           // Restore the reply level used by the Nextion component (ota_dialog_open set bkcmd=0).
           // Queued, so its reply is matched to a sent command and cannot remove the page change below.
