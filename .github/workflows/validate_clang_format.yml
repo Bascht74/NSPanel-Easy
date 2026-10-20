@@ -51,7 +51,7 @@ jobs:
       - name: Apply clang-format
         if: github.event_name != 'pull_request' || steps.changed.outputs.any_changed == 'true'
         run: |
-          find ./components/nspanel_easy ./.test/unit \
+          find ./components/nspanel_easy \
             \( -name "*.h" -o -name "*.c" -o -name "*.cpp" \) \
             -print0 | xargs -0 -r clang-format --style=file -i
 
