@@ -221,6 +221,9 @@ esphome:
 
 After flashing the device, remove the `on_boot` code above and set `ota_password` to the new password.
 
+If your configuration still has the `on_boot` code above with a blank `ota_password`, the panel expects the password set in that code, but the next OTA update sends the blank one and is rejected.
+Remove the `on_boot` code and set `ota_password` to the password used in that code.
+
 > [!NOTE]
 > If you use [API encryption](#api-encryption), consider using [OTA encryption](#ota-encryption) instead of a password.
 
@@ -255,6 +258,10 @@ ota:
     password: !remove  # A password cannot be combined with the OTA encryption
     encryption:
 ```
+
+> [!NOTE]
+> The previous version of this guide enabled the OTA encryption by setting `ota_password` to blank.
+> If you used that, add `password: !remove` as shown above, otherwise ESPHome rejects the configuration because the password cannot be combined with the encryption.
 
 ### Web server credentials
 
