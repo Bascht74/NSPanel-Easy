@@ -126,6 +126,20 @@ which older Editors cannot open or compile.
 Use a macro for code repeated across components or pages, so it is changed in one place.
 `scripts/generate_nextion_txt.sh` exports the macros to `Macros.txt` next to `Program.s.txt`, so they show in reviews.
 
+### Interface used by external tools
+
+Community tools, like [sztupy/nextion-editor-docker](https://github.com/sztupy/nextion-editor-docker),
+rebuild the TFT files with custom backgrounds by regenerating the pictures and re-importing them into the HMI files.
+They rely on the following, so treat it as a stable interface and announce any change in the release notes:
+
+- `hmi/nspanel_landscape.hmi` and `hmi/nspanel_portrait.hmi` as the HMI sources.
+- `hmi/dev/pics/background/background_<theme>_<orientation>.png` as the background sources,
+  with `<theme>` as `dark`, `light` or `splash` and `<orientation>` as `landscape` or `portrait`.
+  Backgrounds are opaque PNG files, 480x320 for landscape and 320x480 for portrait.
+- `hmi/dev/pics/generate_images.sh <orientation>` generating `hmi/dev/pics/<orientation>/<slot>.png`,
+  where `<slot>` is the picture id in the HMI file, numbered without gaps from `0`.
+- `hmi/dev/pics/misc/placeholder.png` as the filler for unused slots.
+
 ### Reporting to ESPHome
 
 Report events to ESPHome with the Nextion custom protocol, handled by ESPHome's `on_custom_*` triggers
