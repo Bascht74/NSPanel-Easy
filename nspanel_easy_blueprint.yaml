@@ -6,7 +6,7 @@
 ##################################################################################################
 ---
 blueprint:
-  name: NSPanel Easy Configuration (v2026.10.2)
+  name: NSPanel Easy Configuration (v2026.10.3)
   author: Edward Firmo (https://github.com/edwardtfn)
   description: >
     # NSPanel Easy Configuration via Blueprint
@@ -5083,7 +5083,7 @@ trigger_variables:
 variables:
   # Blueprint version will be following release version defined automatically when merging to main
   # There's no need to change it here
-  blueprint_version: 2026.10.2
+  blueprint_version: 2026.10.3
 
   # Minimum ESPHome firmware version required by this Blueprint (the Blueprint -> ESPHome contract).
   # Set it to 'next' when a change makes the Blueprint depend on a newer firmware, e.g. a new API
@@ -7369,7 +7369,7 @@ actions:
             {{
               (
                 entity_state in enum.states.on or
-                (entity_domain in ["input_number", "number", "sensor"] and entity_has_value) or
+                (entity_domain in ["input_number", "number", "sensor"] and entity_has_value and entity_state not in ["off", "false", "False"]) or
                 (entity_domain in enum.states and entity_state in enum.states[entity_domain].on)
               ) if entity_id_valid
             }}

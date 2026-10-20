@@ -35,7 +35,7 @@ that text will be replaced by the IP address, which can be useful for troublesho
 #### Baud rate (bps)
 
 On the top right corner, it’s shown the baud rate used by the display to communicate to ESPHome.
-If the display does not respond at the configured rate (default 921600 bps) within a few minutes,
+If the display does not respond at the configured rate (default 921600 bps) within a couple of minutes of boot,
 the panel will run a baud scan across the supported Nextion rates.
 This typically completes within seconds for known-good displays.
 
@@ -73,7 +73,7 @@ You can use this button to force a reboot of your panel. This button is availabl
 | Possible causes | Suggestions |
 | :-- | :-- |
 | You may have an older version of ESPHome installed or ESPHome is not installed. | Make sure you have the latest version of ESPHome and flash your device again. |
-| Baud rate mismatch. | The default baud rate for this project is 921600 bps. The panel will automatically scan all supported rates if the display does not respond within 41 seconds. If the scan does not resolve the issue, check that your display firmware was built for this project. |
+| Baud rate mismatch. | The default baud rate for this project is 921600 bps. The panel will automatically scan all supported rates if the display does not respond within a couple of minutes of boot. If the scan does not resolve the issue, check that your display firmware was built for this project. |
 <!-- markdownlint-enable MD013 MD033 -->
 
 ### Blueprint is not detected

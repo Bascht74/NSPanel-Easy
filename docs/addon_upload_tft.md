@@ -332,6 +332,10 @@ rate on its next boot, so subsequent boots return to the configured rate automat
 If the scan finds no responsive rate, the panel power-cycles the display and repeats
 the wait-and-scan cycle indefinitely.
 
+The same scan runs when a TFT upload starts while the display is not responding, so
+the upload is sent at the rate the display is actually using. If no rate answers, the
+upload is aborted and the panel restarts.
+
 The scan typically completes within seconds for known-good displays. Probe timing can
 be tuned via the `BAUD_RATE_PROBE_MS` substitution (default 1500 ms per rate).
 See the [Hardware UART configuration](hw_uart.md) for details.

@@ -80,12 +80,21 @@ ota:
     # The download blocks the main loop, so show the same dialog as for ota_std
     on_begin:
       then:
+        - lambda: system_flags.ota_in_progress = true;
         - script.execute: ota_dialog_open
+    on_progress:
+      then:
+        - script.execute:
+            id: ota_dialog_progress
+            progress: !lambda return x;
+    # A failed or aborted OTA does not reboot the panel, so clear the flag to re-enable the watchdog
     on_abort:
       then:
+        - lambda: system_flags.ota_in_progress = false;
         - script.execute: ota_dialog_close
     on_error:
       then:
+        - lambda: system_flags.ota_in_progress = false;
         - script.execute: ota_dialog_close
 
 text:
