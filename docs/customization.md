@@ -198,7 +198,7 @@ api:
 
 ### Custom OTA password
 
-By default, the OTA password is blank and the password check is not included in the firmware.
+By default, the OTA password is blank.
 A panel without a password accepts the next OTA update with or without a password, so you can set your password directly:
 
 ```yaml
@@ -221,9 +221,8 @@ esphome:
 
 After flashing the device, remove the `on_boot` code above and set `ota_password` to the new password.
 
-Previous versions of this guide used the `on_boot` code above with a blank `ota_password`.
-That combination no longer compiles, as the password check is only included in the firmware when `ota_password` is set.
-If your configuration still has it, remove the `on_boot` code and set `ota_password` to the password used in that code.
+If your configuration still has the `on_boot` code above with a blank `ota_password`, the panel expects the password set in that code, but the next OTA update sends the blank one and is rejected.
+Remove the `on_boot` code and set `ota_password` to the password used in that code.
 
 > [!NOTE]
 > If you use [API encryption](#api-encryption), consider using [OTA encryption](#ota-encryption) instead of a password.
@@ -246,21 +245,23 @@ Enable it in two steps, as described in ESPHome's
    Add the [API encryption](#api-encryption) if you don't have it yet, keep your current `ota_password`, and flash your panel.
    The device log should show `Encryption: offered, plaintext accepted`.
 2. **Require encryption.**
-   Set `ota_password` to blank, add the code below, and flash your panel again.
+   Add the code below, which removes the OTA password and requires the encryption, and flash your panel again.
    The device log should show `Encryption: required`.
 
 ```yaml
-substitutions:
-  ota_password: ""  # A password cannot be combined with the OTA encryption
-
 api:
   encryption:
     key: !secret api_encryption_key
 
 ota:
   - id: !extend ota_std
+    password: !remove  # A password cannot be combined with the OTA encryption
     encryption:
 ```
+
+> [!NOTE]
+> The previous version of this guide enabled the OTA encryption by setting `ota_password` to blank.
+> If you used that, add `password: !remove` as shown above, otherwise ESPHome rejects the configuration because the password cannot be combined with the encryption.
 
 ### Web server credentials
 
