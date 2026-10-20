@@ -37,11 +37,9 @@ Page climate
                 vis b[sys0],0
                 b[sys0].font=button_font.val
             }
-            // button08 (id 30) and button09 (id 31): set fonts
-            for(sys0=30;sys0<=31;sys0++)
-            {
-                b[sys0].font=button_font.val
-            }
+            // button08 and button09: set fonts
+            button08.font=button_font.val
+            button09.font=button_font.val
             button_back.font=button_back_font
             if(theme==1)
             {
@@ -62,15 +60,12 @@ Page climate
                 {
                     b[sys0].pco=color_pco_unsupported
                 }
-                // button08, button09 (ids 30-31): secondary color; target_high (id 32)
-                for(sys0=30;sys0<=32;sys0++)
-                {
-                    b[sys0].picc=climate.pic
-                    if(sys0<=31)
-                    {
-                        b[sys0].pco=color_pco_secondary
-                    }
-                }
+                // button08, button09: secondary color; target_high: background only
+                button08.picc=climate.pic
+                button08.pco=color_pco_secondary
+                button09.picc=climate.pic
+                button09.pco=color_pco_secondary
+                target_high.picc=climate.pic
                 // Sliders use picc1 for the track background
                 slider_high.picc1=climate.pic
                 slider_low.picc1=climate.pic
