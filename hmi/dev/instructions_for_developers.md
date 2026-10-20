@@ -130,6 +130,26 @@ under Wine, with scripts to build TFT files from HMI files.
 Use a macro for code repeated across components or pages, so it is changed in one place.
 `scripts/generate_nextion_txt.sh` exports the macros to `Macros.txt` next to `Program.s.txt`, so they show in reviews.
 
+Macros only reach global data: the system variables (`sys0` to `sys3`), the variables declared in `Program.s`
+and global-scope components on the `home` page. Pass inputs in system variables, return results in a global-scope
+`home` variable, and document both, plus any system variable the macro changes, at the top of the macro.
+
+#### `format_tenths`
+
+Formats a value stored in tenths (as used by the climate and water heater sliders) as text.
+The decimal is only shown when the step is not a whole number, using the separator in `home.dec_sep`.
+
+- Inputs: `sys0` (value in tenths) and `sys1` (step in tenths)
+- Output: `home.tenths_txt.txt`
+- Also changes: `sys0`, `sys2` and `home.tenths_tmp.txt`
+
+```c
+sys0=temp_number0.val
+sys1=temp_step.val
+call format_tenths
+target.txt=home.tenths_txt.txt+temp_unit.txt
+```
+
 ### Interface used by external tools
 
 Community tools, like [sztupy/nextion-editor-docker](https://github.com/sztupy/nextion-editor-docker),
