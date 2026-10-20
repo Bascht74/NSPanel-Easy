@@ -27,7 +27,7 @@ namespace hmi::climate {
  * Names have no page prefix: the page has local scope, and `vis` does not accept one.
  */
 
-constexpr HMIComponent PRESET_BUTTON = {"preset_button", 54};  ///< Preset mode button (3 chars max)
+constexpr HMIComponent PRESET_BUTTON = {"preset_button", 51};  ///< Preset mode button (3 chars max)
 
 }  // namespace hmi::climate
 }  // namespace esphome::nspanel_easy
