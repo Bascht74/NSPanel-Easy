@@ -138,6 +138,8 @@ They rely on the following, so treat it as a stable interface and announce any c
   Backgrounds are opaque PNG files, 480x320 for landscape and 320x480 for portrait.
 - `hmi/dev/pics/generate_images.sh <orientation>` generating `hmi/dev/pics/<orientation>/<slot>.png`,
   where `<slot>` is the picture id in the HMI file, numbered without gaps from `0`.
+  The script must run from a complete checkout, as it also reads `hmi/dev/pics/mapping.yaml` and the source images,
+  and exits with a non-zero status if any picture fails to generate.
 - `hmi/dev/pics/misc/placeholder.png` as the filler for unused slots.
 
 ### Reporting to ESPHome
