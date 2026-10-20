@@ -121,6 +121,10 @@ scripts:
 Nextion Editor v1.68.2 or later is required. The TFTs use macros (named global events called with `call <macro>`),
 which older Editors cannot open or compile.
 
+To compile without a Windows machine (or in automation),
+[sztupy/nextion-editor-docker](https://github.com/sztupy/nextion-editor-docker) provides Nextion Editor 1.68.2
+under Wine, with scripts to build TFT files from HMI files.
+
 ### Macros
 
 Use a macro for code repeated across components or pages, so it is changed in one place.
