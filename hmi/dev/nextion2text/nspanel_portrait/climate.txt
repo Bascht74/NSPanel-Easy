@@ -40,6 +40,7 @@ Page climate
             // Preset mode button: hidden until ESPHome or the Blueprint confirms presets
             vis preset_button,0
             preset_button.font=button_font.val
+            preset_button.pco=color_pco_secondary
             // button08 and button09: set fonts
             button08.font=button_font.val
             button09.font=button_font.val
@@ -71,7 +72,6 @@ Page climate
                 target_high.picc=climate.pic
                 // Preset mode button: secondary color
                 preset_button.picc=climate.pic
-                preset_button.pco=color_pco_secondary
                 // Sliders use picc1 for the track background
                 slider_high.picc1=climate.pic
                 slider_low.picc1=climate.pic
