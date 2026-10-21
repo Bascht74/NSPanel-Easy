@@ -10611,9 +10611,29 @@ actions:
                                       if current_preset_mode_raw is defined and current_preset_mode_raw is string and current_preset_mode_raw | length > 0
                                       else ""
                                     }}
+                                  # Options and button visibility are pushed on construction, and on updates only when the
+                                  # preset support or list changes, or when the active preset changes while the list is
+                                  # truncated (the active preset must stay among the retained options).
+                                  preset_refresh: >-
+                                    {%- if page_constructor -%}
+                                      true
+                                    {%- else -%}
+                                      {%- set old_state = trigger.event.data.old_state -%}
+                                      {%- if old_state is none -%}
+                                        true
+                                      {%- else -%}
+                                        {%- set old_supported = old_state.attributes.get("supported_features", 0) | int(0) | bitwise_and(16) > 0 -%}
+                                        {%- set new_supported = state_attr(climate_entity, "supported_features") | int(0) | bitwise_and(16) > 0 -%}
+                                        {{
+                                          old_supported != new_supported
+                                          or old_state.attributes.get("preset_modes") != preset_modes_attr
+                                          or (preset_modes_raw | length > 32 and old_state.attributes.get("preset_mode") != current_preset_mode_raw)
+                                        }}
+                                      {%- endif -%}
+                                    {%- endif -%}
 
-                              ##### Construction-only: push options + show preset button #####
-                              - if: '{{ page_constructor }}'
+                              ##### Construction and preset list changes: push options + show preset button #####
+                              - if: '{{ preset_refresh }}'
                                 then:
                                   - if: '{{ preset_modes_raw | length > 0 }}'
                                     then:
