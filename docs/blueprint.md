@@ -100,6 +100,8 @@ Additional climate entities can be assigned to buttons and will be explained lat
 
 On the blueprint settings, you will also find settings for sensors and custom buttons to be shown on all the climate pages.
 
+When a climate entity supports preset modes (like `eco`, `comfort` or `away`), its climate page shows a preset button that opens a list with the available presets.
+
 ## QR Code
 
 ### Activate QR Code (Optional)
