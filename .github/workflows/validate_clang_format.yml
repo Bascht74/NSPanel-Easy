@@ -9,9 +9,10 @@ on:
 permissions:
   contents: write  # Required for auto-commit
 
-# One run per branch: a newer push supersedes a run still working on an older commit
+# One run per pull request (or per ref for manual runs): a newer push supersedes a run still working
+# on an older commit; keyed by number, as pull requests from different forks can share a branch name
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
