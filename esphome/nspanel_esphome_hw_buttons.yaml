@@ -394,11 +394,6 @@ script:
             fill = XSTR_FILL_CROP_IMAGE;
             left = is_eu ? LabelPosition{47, 288} : LabelPosition{16, 448};
             right = is_eu ? LabelPosition{288, 288} : LabelPosition{184, 448};
-          } else if (current_page_id == get_page_id("home_smpl")) {
-            background = "0";
-            fill = XSTR_FILL_CROP_IMAGE;
-            left = is_eu ? LabelPosition{46, 282} : LabelPosition{16, 443};
-            right = is_eu ? LabelPosition{287, 280} : LabelPosition{184, 443};
           } else if (current_page_id == get_page_id("screensaver")) {
             background = "screensaver_bco";
             fill = XSTR_FILL_SOLID_COLOR;
