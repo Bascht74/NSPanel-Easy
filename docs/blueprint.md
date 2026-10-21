@@ -287,6 +287,14 @@ data:
 > and pass the tag when compiling: `esphome -s nspanel_easy_ref v<version> compile <config>.yaml`.
 > Do not name this substitution `version`, as that name is already used by NSPanel Easy for the firmware version.
 
+## Screensaver
+
+### Wake-up sensors (Optional)
+
+Binary sensors (like motion, occupancy, doors or windows) that wake up the panel when they turn `On`.
+The panel is kept on while any of these sensors is `On`, and the dim and sleep timeouts start counting once all of them are `Off`.
+While Home Assistant is disconnected, the sensors are ignored.
+
 ## Advanced Settings
 
 ### System settings - Decimal Separator

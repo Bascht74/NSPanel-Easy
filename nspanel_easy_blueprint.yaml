@@ -4577,6 +4577,7 @@ blueprint:
           name: Wake-up sensors
           description: >-
             Select sensors to wake up the panel when the sensor turns `On`.
+            The panel is kept on while any of these sensors is `On`.
           default: &selector_entity_multiple_default_empty []
           selector:
             entity:
@@ -5090,7 +5091,7 @@ variables:
   # action or a new field in an existing one. The versioning workflow replaces 'next' by the version
   # being released. Releases that keep the contract leave it unchanged, so older firmware keeps working.
   # While it is 'next' (development builds), the minimum firmware check is skipped.
-  min_esphome_version: 2026.10.5
+  min_esphome_version: next
 
   # API version [MAJOR, MINOR] this Blueprint uses, matching api_version in
   # esphome/nspanel_esphome_version.yaml. Raise MINOR when the Blueprint starts calling a new API action,
@@ -5287,12 +5288,6 @@ triggers:
         id: ha_started
         trigger: homeassistant
         event: start
-
-      - alias: Wake-up sensor
-        id: wake_up_sensors
-        trigger: state
-        entity_id: !input wake_up_sensors
-        to: "on"
 
   - triggers:  # Button page 01
       - alias: Button 01
@@ -7727,7 +7722,16 @@ actions:
                                 {%- elif indoortemp_tmp is list and indoortemp_tmp | count > 0 and indoortemp_tmp[0] is string -%} {{ indoortemp_tmp[0] }}
                                 {%- endif -%}
                           - variables:
+                              wake_up_sensors_tmp: !input wake_up_sensors
+                          - variables:
                               subs_lists:
+                                wakeup: >-
+                                  {%- set sensors = [wake_up_sensors_tmp] if wake_up_sensors_tmp is string else wake_up_sensors_tmp -%}
+                                  {%- set ns = namespace(items=[]) -%}
+                                  {%- for sensor in sensors | default([], true) -%}
+                                    {%- set ns.items = ns.items + [{"entity": sensor, "component": "sensor%02d" | format(loop.index)}] -%}
+                                  {%- endfor -%}
+                                  {{ ns.items }}
                                 chips:
                                   - entity: !input chip01
                                     inverted: !input chip01_inverted
@@ -7801,6 +7805,10 @@ actions:
                                   ) + (
                                     home_page.custom_buttons
                                     | map('combine', {'page': 'home'})
+                                    | list
+                                  ) + (
+                                    subs_lists.wakeup
+                                    | map('combine', {'page': 'wakeup'})
                                     | list
                                   )
                                 }}
@@ -13755,16 +13763,4 @@ actions:
                 }}
               sequence:
                 - *display_value
-
-      - alias: Wake-up
-        conditions:
-          - condition: trigger
-            id: wake_up_sensors
-        sequence:
-          - action: 'esphome.{{ action_prefix }}_component_val'
-            data:
-              page: mem
-              id: wake_up
-              val: 1  # reset timers
-            continue_on_error: true
 ...
