@@ -37,6 +37,9 @@ Page climate
                 vis b[sys0],0
                 b[sys0].font=button_font.val
             }
+            // Preset mode button: hidden until ESPHome or the Blueprint confirms presets
+            vis preset_button,0
+            preset_button.font=button_font.val
             // button08 and button09: set fonts
             button08.font=button_font.val
             button09.font=button_font.val
@@ -66,6 +69,9 @@ Page climate
                 button09.picc=climate.pic
                 button09.pco=color_pco_secondary
                 target_high.picc=climate.pic
+                // Preset mode button: secondary color
+                preset_button.picc=climate.pic
+                preset_button.pco=color_pco_secondary
                 // Sliders use picc1 for the track background
                 slider_high.picc1=climate.pic
                 slider_low.picc1=climate.pic
@@ -926,6 +932,37 @@ Text target_low
     Events
         Touch Release Event
             active_slider.val=2
+        
+Text preset_button
+    Attributes
+        ID                      : 51
+        Scope                   : local
+        Dragging                : 0
+        Send Component ID       : on press and release
+        Opacity                 : 127
+        x coordinate            : 141
+        y coordinate            : 413
+        Width                   : 48
+        Height                  : 48
+        Effect                  : load
+        Effect Priority         : 0
+        Effect Time             : 300
+        Fill                    : crop image
+        Associated Keyboard     : none
+        Font ID                 : 8
+        Cropped Back. Picture ID: 37
+        Horizontal Alignment    : center
+        Vertical Alignment      : center
+        Input Type              : character
+        Text                    : \xef\x95\x81
+        Max. Text Size          : 3
+        Word wrap               : disabled
+        Horizontal Spacing      : 0
+        Vertical Spacing        : 0
+    
+    Events
+        Touch Press Event
+            preset_button.pco=31
         
 Slider slider_high
     Attributes
