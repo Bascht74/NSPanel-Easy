@@ -5089,6 +5089,7 @@ variables:
   # Set it to 'next' when a change makes the Blueprint depend on a newer firmware, e.g. a new API
   # action or a new field in an existing one. The versioning workflow replaces 'next' by the version
   # being released. Releases that keep the contract leave it unchanged, so older firmware keeps working.
+  # While it is 'next' (development builds), the minimum firmware check is skipped.
   min_esphome_version: next
 
   # API version [MAJOR, MINOR] this Blueprint uses, matching api_version in
@@ -5126,7 +5127,8 @@ variables:
     {{ (blueprint_version | string).split('.') | map('int') | list }}
   # Parsed into an integer tuple. The unresolved 'next' sentinel (development
   # builds) and any unparseable value fall back to this Blueprint's own version,
-  # the strictest requirement.
+  # the strictest requirement. While the sentinel is unresolved, this is only
+  # used in notifications, as the check is skipped (see min_esphome_version_pending).
   min_esphome_version_parts: >-
     {{
       (min_esphome_version | string).split('.') | map('int') | list
@@ -5136,6 +5138,10 @@ variables:
     }}
   # Resolved minimum version, for notifications and custom actions.
   min_esphome_version_string: "{{ min_esphome_version_parts | join('.') }}"
+  # True while min_esphome_version is the unresolved 'next' sentinel (development builds).
+  # The required firmware version is not known yet, so the minimum version check is skipped,
+  # while the API version check still applies. The versioning workflow resolves it on release.
+  min_esphome_version_pending: "{{ (min_esphome_version | string | trim) == 'next' }}"
   # API version reported by the firmware, parsed into [MAJOR, MINOR]. Only panel
   # events carry it, so it is empty for runs started by any other trigger, and for
   # firmware that does not report it yet.
@@ -5180,7 +5186,8 @@ variables:
     {{
       esphome_version_parts | count == 3
       and (
-        esphome_version_parts[0] > min_esphome_version_parts[0]
+        min_esphome_version_pending
+        or esphome_version_parts[0] > min_esphome_version_parts[0]
         or (esphome_version_parts[0] == min_esphome_version_parts[0]
             and esphome_version_parts[1] > min_esphome_version_parts[1])
         or (esphome_version_parts[0] == min_esphome_version_parts[0]
