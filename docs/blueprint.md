@@ -59,6 +59,11 @@ Most of the weather integrations are supported, however some may be able to prov
 
 We run all of our tests with "Accuweather", so the parameters shown on the panel are targetting this integration and will be shown with your integration when available.
 
+### Weather pages - Show maximum temperature first
+
+The weather pages show the forecast temperatures as `<min> / <max>` by default.
+Enable this option to show them as `<max> / <min>`.
+
 ### Outdoor temperature Sensor (Optional)
 
 Optionally, the value of an outdoor temperature sensor can be used here.

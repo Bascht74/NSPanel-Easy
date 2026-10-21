@@ -278,6 +278,13 @@ blueprint:
               filter:
                 domain:
                   - weather
+        weather_forecast_max_first:
+          name: Weather pages - Show maximum temperature first
+          description: >
+            Toggle to show the forecast temperatures on the weather pages as `<max> / <min>` instead of `<min> / <max>`.
+          default: false
+          selector:
+            boolean:
         home_outdoor_temp_visible:
           name: Home Page - Outdoor Temperature Sensor Visibility
           description: "Toggle to display the outdoor temperature on the Home page."
@@ -11817,10 +11824,13 @@ actions:
                                           weather_entity_uom if weather_entity_uom is string and weather_entity_uom | length > 0
                                           else temperature_units
                                         }}
+                                      weather_forecast_max_first: !input weather_forecast_max_first
                                       temperature_string: >
-                                        {{ (temp_min | round(0) ~ ("" if compact_unit_display else " ") ~ weather_temp_units) if is_number(temp_min) }}
-                                        {{ "/" if is_number(temp_min) and is_number(temp_max) and temp_min != temp_max }}
-                                        {{ (temp_max | round(0) ~ ("" if compact_unit_display else " ") ~ weather_temp_units) if is_number(temp_max) and temp_min != temp_max }}
+                                        {%- set unit_separator = "" if compact_unit_display else " " -%}
+                                        {%- set temp_low = (temp_min | round(0) ~ unit_separator ~ weather_temp_units) if is_number(temp_min) else "" -%}
+                                        {%- set temp_high = (temp_max | round(0) ~ unit_separator ~ weather_temp_units) if is_number(temp_max) and temp_min != temp_max else "" -%}
+                                        {%- set temps = [temp_high, temp_low] if weather_forecast_max_first else [temp_low, temp_high] -%}
+                                        {{ temps | reject("eq", "") | join(" / ") }}
                                   - if: '{{ (is_number(temp_min) or is_number(temp_max)) and temperature_string is string and temperature_string | length > 0 }}'
                                     then:
                                       - action: 'esphome.{{ action_prefix }}_component_text_list'
