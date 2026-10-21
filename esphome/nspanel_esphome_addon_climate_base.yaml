@@ -240,10 +240,29 @@ script:
           if (current_page_id != get_page_id("climate")) return;
 
           // Calculate static values
+          // Values are handled in tenths, as sent to the display. With a whole-number step, the minimum is
+          // rounded up to a multiple of the step (as the Blueprint does for Home Assistant climates), so every
+          // slider value is a whole number, shown without decimals both while sliding and after release.
           ESP_LOGV("${TAG_ADDON_CLIMATE}", "Calculated static values:");
-          const uint16_t total_steps = static_cast<uint16_t>(std::round((temp_max - temp_offset) / temp_step));
+          static const int32_t temp_step_tenths = static_cast<int32_t>(std::lround(temp_step * 10.0f));
+          static const int32_t temp_max_tenths = static_cast<int32_t>(std::lround(temp_max * 10.0f));
+          static const int32_t temp_offset_tenths_raw = static_cast<int32_t>(std::lround(temp_offset * 10.0f));
+          static const int32_t temp_offset_remainder =
+              (temp_step_tenths > 0)
+                  ? ((temp_offset_tenths_raw % temp_step_tenths) + temp_step_tenths) % temp_step_tenths
+                  : 0;
+          static const int32_t temp_offset_tenths =
+              (temp_step_tenths > 0 && temp_step_tenths % 10 == 0 && temp_offset_remainder != 0)
+                  ? temp_offset_tenths_raw + temp_step_tenths - temp_offset_remainder
+                  : temp_offset_tenths_raw;
+          const uint16_t total_steps =
+              (temp_step_tenths > 0 && temp_max_tenths >= temp_offset_tenths)
+                  ? static_cast<uint16_t>((temp_max_tenths - temp_offset_tenths) / temp_step_tenths)
+                  : 0;
           ESP_LOGV("${TAG_ADDON_CLIMATE}", "  temp_step: %f${temp_units}", temp_step);
           ESP_LOGV("${TAG_ADDON_CLIMATE}", "  temp_offset: %f${temp_units}", temp_offset);
+          ESP_LOGV("${TAG_ADDON_CLIMATE}", "  temp_step_tenths: %" PRId32, temp_step_tenths);
+          ESP_LOGV("${TAG_ADDON_CLIMATE}", "  temp_offset_tenths: %" PRId32, temp_offset_tenths);
           ESP_LOGV("${TAG_ADDON_CLIMATE}", "  total_steps: %i", total_steps);
 
           if (current_page_id != get_page_id("climate")) return;
@@ -296,9 +315,9 @@ script:
             -999.0f,                      // temp_target_high
             -999.0f,                      // temp_target_low
             #endif  // NSPANEL_EASY_ADDON_CLIMATE_DUAL
-            int(roundf(temp_step*10)),    // temp_step
+            temp_step_tenths,             // temp_step
             total_steps,                  // total_steps
-            int(roundf(temp_offset*10)),  // temp_offset
+            temp_offset_tenths,           // temp_offset
             ""                            // climate_icon
           );
 
