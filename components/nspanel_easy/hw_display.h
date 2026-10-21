@@ -105,8 +105,9 @@ bool wakeup_sensors_active();
  *
  * Acts only on connection changes. When the connection is lost, every wake-up sensor is
  * released, as their states can no longer be trusted, so a sensor that was active cannot
- * keep the display on indefinitely. Their cached states are also forgotten, so the states
- * Home Assistant sends again on reconnection are applied, even when unchanged.
+ * keep the display on indefinitely. Their cached states (and climate hvac_action) are also
+ * forgotten, so the states Home Assistant sends again on reconnection are applied, even when
+ * unchanged.
  *
  * @param connected Whether Home Assistant is connected with state subscriptions.
  */

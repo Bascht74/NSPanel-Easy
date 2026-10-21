@@ -60,7 +60,8 @@ void wakeup_sensors_connection_update(bool connected) {
   for (uint16_t idx = 0; idx < sub_count; idx++) {
     if (sub_renderers[idx] == &wakeup_sensor_render) {
       sub_runtime[idx].state[0] = '\0';
-    }
+      sub_runtime[idx].action[0] = '\0';  // hvac_action, used by climate bindings only
+    }  // if (wakeup binding)
   }  // for (idx)
 
   if (!wakeup_sensors_active()) {
