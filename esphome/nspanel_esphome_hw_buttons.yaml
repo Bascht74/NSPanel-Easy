@@ -127,7 +127,25 @@ globals:
     restore_value: true
     initial_value: '1ULL << get_page_id("home")'
 
+  # Page table (PAGE_TABLE_HASH) in use when `buttons_bars_pages` and `buttons_labels_pages` were saved
+  - id: buttons_pages_table_hash
+    type: uint32_t
+    restore_value: true
+    initial_value: '0'
+
 script:
+  - id: !extend boot_early_routines
+    then:
+      - lambda: |-
+          // The pages masks are by page id, which changes when the page table changes (a page added,
+          // removed or moved). Masks saved with another page table point to the wrong pages, so they
+          // are reset to the defaults until the Blueprint sends them again.
+          if (id(buttons_pages_table_hash) == PAGE_TABLE_HASH) return;
+          ESP_LOGI("${TAG_HW_BUTTONS}", "Page table changed, buttons pages reset to defaults");
+          id(buttons_bars_pages) = 1ULL << get_page_id("home");
+          id(buttons_labels_pages) = 1ULL << get_page_id("home");
+          id(buttons_pages_table_hash) = PAGE_TABLE_HASH;
+
   - id: !extend action_component_color
     then:
       - lambda: |-

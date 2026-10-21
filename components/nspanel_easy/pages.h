@@ -32,6 +32,29 @@ constexpr const char *const page_names[] = {
 constexpr size_t PAGE_COUNT = sizeof(page_names) / sizeof(page_names[0]);
 static_assert(PAGE_COUNT <= UINT8_MAX, "PAGE_COUNT exceeds uint8_t range");
 
+/**
+ * Computes a FNV-1a hash of the page table (page names and their order) at compile time.
+ *
+ * Page IDs are positions in `page_names`, matching the TFT in use, so they change whenever
+ * a page is added, removed or moved. Values persisted by page ID are saved together with
+ * this hash, so values saved with an older page table can be detected and discarded.
+ *
+ * @return Hash of the page table.
+ */
+constexpr uint32_t page_table_hash() {
+  uint32_t hash = 2166136261U;  // FNV-1a offset basis
+  for (const char *name : page_names) {
+    for (const char *c = name; *c != '\0'; ++c) {
+      hash = (hash ^ static_cast<uint8_t>(*c)) * 16777619U;  // FNV-1a prime
+    }  // for (c)
+    hash *= 16777619U;  // Name separator (XOR with 0), so {"ab", "c"} and {"a", "bc"} differ
+  }  // for (name)
+  return hash;
+}
+
+/// Hash of the page table in use, see page_table_hash().
+constexpr uint32_t PAGE_TABLE_HASH = page_table_hash();
+
 // Global system flags - initialized to 0 (all flags false)
 extern uint8_t current_page_id;
 extern uint8_t home_page_id;  ///< Page used as home; every navigation to home uses this, never a literal page
