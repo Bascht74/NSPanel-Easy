@@ -10,7 +10,7 @@
 # 7. Commits all version changes and pushes to main
 # 8. Builds pre-built firmware binaries in parallel (nspanel-easy, wall-display)
 # 9. Commits the compiled binaries, checksums, and manifests to main
-# 10. Creates a version tag and GitHub Release
+# 10. Creates a version tag and GitHub Release, described by the PR that triggered it
 # 11. Updates the stable and latest floating tags
 # 12. Announces the release on Discord
 #
@@ -660,7 +660,7 @@ jobs:
       # Tag and release (after binary commit, so tag points to final state)
       # -------------------------------------------------------------------
 
-      - name: Build tag message from PR
+      - name: Build tag message and release notes from PR
         env:
           NEW_VERSION: ${{ needs.bump.outputs.version }}
           PR_TITLE: ${{ needs.bump.outputs.pr_title }}
@@ -670,6 +670,8 @@ jobs:
             printf '# v%s - %s\n\n' "$NEW_VERSION" "$PR_TITLE"
             printf '%s\n' "$PR_BODY"
           } > tag_message.txt
+          # The release description is the PR description, followed by the generated notes
+          printf '%s\n' "$PR_BODY" > release_notes.md
 
       - name: Create and push version tag
         id: push_tag
@@ -687,6 +689,7 @@ jobs:
         with:
           tag_name: v${{ needs.bump.outputs.version }}
           name: v${{ needs.bump.outputs.version }} - ${{ needs.bump.outputs.pr_title }}
+          body_path: release_notes.md
           generate_release_notes: true
 
       # -------------------------------------------------------------------
