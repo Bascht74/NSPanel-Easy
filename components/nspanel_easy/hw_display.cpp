@@ -7,6 +7,10 @@
 #include <cstddef>
 #include <cstring>
 
+#ifdef NSPANEL_EASY_SUBSCRIBE
+#include "esphome/components/api/api_server.h"
+#endif  // NSPANEL_EASY_SUBSCRIBE
+
 namespace esphome::nspanel_easy {
 
 static const char *TAG_COMPONENT_HW_DISPLAY = "nspanel.component.hw_display";
@@ -39,7 +43,20 @@ bool wakeup_sensors_active() {
   return false;
 }
 
-void wakeup_sensors_release() {
+void wakeup_sensors_connection_update(bool connected) {
+  static bool was_connected = false;
+  if (connected == was_connected) {
+    return;
+  }
+  was_connected = connected;
+
+  if (connected) {
+    // A state that did not change while disconnected is not delivered again, so the
+    // bindings are re-applied from their last known state
+    sub_render_all();
+    return;
+  }  // if (connected)
+
   if (!wakeup_sensors_active()) {
     return;
   }
@@ -59,7 +76,9 @@ void wakeup_sensor_render(const SubBinding &binding, const SubRuntime &rt, const
 
   const uint8_t mask = static_cast<uint8_t>(1U << (idx % 8));
   uint8_t &bits = wakeup_sensors_bits[idx / 8];
-  const bool active = (rt.last_state == SUB_STATE_ON);
+  // The last known state is stale while Home Assistant is not connected, and bindings are
+  // re-applied on page changes, so a sensor is only active while connected
+  const bool active = (rt.last_state == SUB_STATE_ON) && api::global_api_server->is_connected_with_state_subscription();
   const bool was_active = (bits & mask) != 0;
   if (active == was_active) {
     return;  // Re-applied without a change (e.g. on a page change)
@@ -70,7 +89,7 @@ void wakeup_sensor_render(const SubBinding &binding, const SubRuntime &rt, const
   } else {
     bits &= static_cast<uint8_t>(~mask);
   }  // if (active)
-  ESP_LOGD(TAG_COMPONENT_HW_DISPLAY, "Wake-up sensor %s: %s", binding.entity, active ? "active" : "idle");
+  ESP_LOGV(TAG_COMPONENT_HW_DISPLAY, "Wake-up sensor %s: %s", binding.entity, active ? "active" : "idle");
 
   if (!wakeup_sensors_changed) {
     return;

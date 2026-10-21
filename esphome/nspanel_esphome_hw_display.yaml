@@ -574,8 +574,8 @@ script:
       - script.execute: wakeup_page_update
       - lambda: |-
           #ifdef NSPANEL_EASY_SUBSCRIBE
-          // Sensor states are stale while disconnected; reconnection sends them again
-          if (!api_server->is_connected_with_state_subscription()) wakeup_sensors_release();
+          // Sensor states are stale while disconnected, and are re-applied on reconnection
+          wakeup_sensors_connection_update(api_server->is_connected_with_state_subscription());
           #endif  // NSPANEL_EASY_SUBSCRIBE
 
   - id: !extend boot_early_routines

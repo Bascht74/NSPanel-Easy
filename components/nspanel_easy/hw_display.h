@@ -101,20 +101,24 @@ extern std::function<void(bool active)> wakeup_sensors_changed;
 bool wakeup_sensors_active();
 
 /**
- * @brief Release every wake-up sensor, as their states can no longer be trusted.
+ * @brief Follow the connection to Home Assistant for the wake-up sensors.
  *
- * Called when the connection to Home Assistant is lost, so a sensor that was active
- * cannot keep the display on indefinitely. The states sent again on reconnection
- * restore whatever is still active.
+ * Acts only on connection changes. When the connection is lost, every wake-up sensor is
+ * released, as their states can no longer be trusted, so a sensor that was active cannot
+ * keep the display on indefinitely. On reconnection, the bindings are re-applied, as a state
+ * that did not change while disconnected is not delivered again.
+ *
+ * @param connected Whether Home Assistant is connected with state subscriptions.
  */
-void wakeup_sensors_release();
+void wakeup_sensors_connection_update(bool connected);
 
 /**
  * @brief Track a subscription binding targeting the wake-up sensors.
  *
  * Registered for the "wakeup" page in sub_resolve_renderer(). Nothing is drawn: the
- * binding only reports whether its sensor is active. Bindings are re-applied on every
- * page change, so only transitions are acted upon.
+ * binding only reports whether its sensor is active, which it never is while Home Assistant
+ * is not connected. Bindings are re-applied on every page change, so only transitions are
+ * acted upon.
  *
  * @param binding Binding being applied.
  * @param rt Runtime state, holding the classification of the sensor state.
