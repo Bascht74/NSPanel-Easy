@@ -420,6 +420,17 @@ script:
             color_right = id(hardware_settings).button_right_state ? id(buttons_color_on) : id(buttons_color_off);
           }  // if (follow_color and button_right_enabled)
 
+          // While Home Assistant is not connected, a button that only reports to it does nothing, so its
+          // label is dimmed. A button that switches its relay locally, or falls back to it, keeps working.
+          if (!api_server->is_connected_with_state_subscription()) {
+            if (!id(hardware_settings).relay1_local and !id(hardware_settings).relay1_fallback) {
+              color_left = Colors::RGB565_GRAY_DARK;
+            }  // if (left button depends on Home Assistant)
+            if (!id(hardware_settings).relay2_local and !id(hardware_settings).relay2_fallback) {
+              color_right = Colors::RGB565_GRAY_DARK;
+            }  // if (right button depends on Home Assistant)
+          }  // if (!api_server->is_connected_with_state_subscription())
+
           static constexpr uint16_t LABEL_WIDTH = 120;
           static constexpr uint16_t LABEL_HEIGHT = 20;
           static constexpr uint8_t LABEL_FONT_ID = 1;
@@ -447,6 +458,17 @@ script:
       - script.execute:
           id: refresh_hardware_buttons_labels
           clear: false
+
+  # Redraw the labels when the connection to Home Assistant changes, as the labels of the buttons
+  # that depend on it are dimmed while it is not connected
+  - id: !extend update_flag_api_ready
+    then:
+      - lambda: |-
+          static bool labels_api_connected = true;
+          const bool connected = api_server->is_connected_with_state_subscription();
+          if (connected == labels_api_connected) return;
+          labels_api_connected = connected;
+          refresh_hardware_buttons_labels->execute(false);
 
   - id: !extend stop_all
     then:
