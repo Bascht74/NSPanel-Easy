@@ -158,6 +158,8 @@ The entity that should be switched with the left/right hardware button.
 ### Left/Right Hardware Button Name - Label (Optional)
 
 Text on the screen above the corresponding hardware button, shown on the pages selected in [Labels Pages](#labels-pages).
+While Home Assistant is not connected, the label is dimmed, as the button has no effect.
+This does not apply when the button controls its relay locally or with [Activate Relay x local Fallback](#activate-relay-x-local-fallback-optional), as the button keeps working.
 
 ### Left/Right Hardware Button hold assignment - VALUE (optional)
 
