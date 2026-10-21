@@ -4,6 +4,7 @@
 
 #ifdef NSPANEL_EASY_ADDON_CLIMATE_BASE
 
+#include <cstdint>
 #include <string>
 #include "all_icons.h"
 #include "nextion_constants.h"
@@ -63,6 +64,40 @@ enum ClimateChipVisibility : uint8_t {
   CLIMATE_CHIP_ACTIVE_ONLY = 0,  ///< Show chip only when actively heating/cooling/drying/fan
   CLIMATE_CHIP_ALWAYS = 1,       ///< Always show chip when a climate entity is configured
   CLIMATE_CHIP_NEVER = 2         ///< Never show the chip, regardless of climate state
+};
+
+// =============================================================================
+// Climate Preset Names
+// =============================================================================
+
+/// Number of standard climate presets (values 0-7 of ESPHome's `climate::ClimatePreset`).
+constexpr uint8_t CLIMATE_PRESET_NAMES_COUNT = 8;
+
+/**
+ * @brief Display names of ESPHome's standard climate presets.
+ *
+ * Array indices correspond to ESPHome's `climate::ClimatePreset` enum values (0-7):
+ * - [0] CLIMATE_PRESET_NONE
+ * - [1] CLIMATE_PRESET_HOME
+ * - [2] CLIMATE_PRESET_AWAY
+ * - [3] CLIMATE_PRESET_BOOST
+ * - [4] CLIMATE_PRESET_COMFORT
+ * - [5] CLIMATE_PRESET_ECO
+ * - [6] CLIMATE_PRESET_SLEEP
+ * - [7] CLIMATE_PRESET_ACTIVITY
+ *
+ * Written as users name them in the thermostat `preset` list. `ClimateCall::set_preset()`
+ * matches standard preset names case-insensitively, so these can be sent back unchanged.
+ */
+constexpr const char *climate_preset_names[CLIMATE_PRESET_NAMES_COUNT] = {
+    "None",     // CLIMATE_PRESET_NONE (0)
+    "Home",     // CLIMATE_PRESET_HOME (1)
+    "Away",     // CLIMATE_PRESET_AWAY (2)
+    "Boost",    // CLIMATE_PRESET_BOOST (3)
+    "Comfort",  // CLIMATE_PRESET_COMFORT (4)
+    "Eco",      // CLIMATE_PRESET_ECO (5)
+    "Sleep",    // CLIMATE_PRESET_SLEEP (6)
+    "Activity"  // CLIMATE_PRESET_ACTIVITY (7)
 };
 
 // =============================================================================
