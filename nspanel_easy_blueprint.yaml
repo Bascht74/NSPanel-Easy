@@ -278,6 +278,13 @@ blueprint:
               filter:
                 domain:
                   - weather
+        weather_forecast_max_first:
+          name: Weather pages - Show maximum temperature first
+          description: >
+            Toggle to show the forecast temperatures on the weather pages as `<max> / <min>` instead of `<min> / <max>`.
+          default: false
+          selector:
+            boolean:
         home_outdoor_temp_visible:
           name: Home Page - Outdoor Temperature Sensor Visibility
           description: "Toggle to display the outdoor temperature on the Home page."
@@ -4577,6 +4584,7 @@ blueprint:
           name: Wake-up sensors
           description: >-
             Select sensors to wake up the panel when the sensor turns `On`.
+            The panel is kept on while any of these sensors is `On`.
           default: &selector_entity_multiple_default_empty []
           selector:
             entity:
@@ -5090,7 +5098,7 @@ variables:
   # action or a new field in an existing one. The versioning workflow replaces 'next' by the version
   # being released. Releases that keep the contract leave it unchanged, so older firmware keeps working.
   # While it is 'next' (development builds), the minimum firmware check is skipped.
-  min_esphome_version: 2026.10.5
+  min_esphome_version: next
 
   # API version [MAJOR, MINOR] this Blueprint uses, matching api_version in
   # esphome/nspanel_esphome_version.yaml. Raise MINOR when the Blueprint starts calling a new API action,
@@ -5287,12 +5295,6 @@ triggers:
         id: ha_started
         trigger: homeassistant
         event: start
-
-      - alias: Wake-up sensor
-        id: wake_up_sensors
-        trigger: state
-        entity_id: !input wake_up_sensors
-        to: "on"
 
   - triggers:  # Button page 01
       - alias: Button 01
@@ -7727,7 +7729,16 @@ actions:
                                 {%- elif indoortemp_tmp is list and indoortemp_tmp | count > 0 and indoortemp_tmp[0] is string -%} {{ indoortemp_tmp[0] }}
                                 {%- endif -%}
                           - variables:
+                              wake_up_sensors_tmp: !input wake_up_sensors
+                          - variables:
                               subs_lists:
+                                wakeup: >-
+                                  {%- set sensors = [wake_up_sensors_tmp] if wake_up_sensors_tmp is string else wake_up_sensors_tmp -%}
+                                  {%- set ns = namespace(items=[]) -%}
+                                  {%- for sensor in sensors | default([], true) -%}
+                                    {%- set ns.items = ns.items + [{"entity": sensor, "component": "sensor%02d" | format(loop.index)}] -%}
+                                  {%- endfor -%}
+                                  {{ ns.items }}
                                 chips:
                                   - entity: !input chip01
                                     inverted: !input chip01_inverted
@@ -7801,6 +7812,10 @@ actions:
                                   ) + (
                                     home_page.custom_buttons
                                     | map('combine', {'page': 'home'})
+                                    | list
+                                  ) + (
+                                    subs_lists.wakeup
+                                    | map('combine', {'page': 'wakeup'})
                                     | list
                                   )
                                 }}
@@ -9161,6 +9176,37 @@ actions:
                                             visible: true
                                           continue_on_error: true
                                     - *delay_default
+
+                          # A slot left without an entity is cleared, otherwise the last value
+                          # sent stays on screen after the entity is removed (#351). The text is
+                          # cleared instead of hidden, as `vis` is not kept across page changes.
+                          - alias: Home page values - Clear unconfigured
+                            repeat:
+                              for_each: >
+                                {%- set ns = namespace(items=[]) -%}
+                                {%- for item in home_page.entity_value -%}
+                                  {%- if not (item.entity is defined and item.entity is string and item.entity.split(".") | count == 2) -%}
+                                    {%- set ns.items = ns.items + [item] -%}
+                                  {%- endif -%}
+                                {%- endfor -%}
+                                {{ ns.items }}
+                              sequence:
+                                - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                  data:
+                                    page: home
+                                    id: '{{ repeat.item.component }}'
+                                    txt_list:
+                                      - ""
+                                  continue_on_error: true
+                                - *delay_default
+                                - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                  data:
+                                    page: home
+                                    id: '{{ repeat.item.component }}_icon'
+                                    txt_list:
+                                      - ""
+                                  continue_on_error: true
+                                - *delay_default
 
                       - alias: Buttons pages
                         conditions: '{{ nspanel_event.page in pages.buttonpages }}'
@@ -11778,10 +11824,13 @@ actions:
                                           weather_entity_uom if weather_entity_uom is string and weather_entity_uom | length > 0
                                           else temperature_units
                                         }}
+                                      weather_forecast_max_first: !input weather_forecast_max_first
                                       temperature_string: >
-                                        {{ (temp_min | round(0) ~ ("" if compact_unit_display else " ") ~ weather_temp_units) if is_number(temp_min) }}
-                                        {{ "/" if is_number(temp_min) and is_number(temp_max) and temp_min != temp_max }}
-                                        {{ (temp_max | round(0) ~ ("" if compact_unit_display else " ") ~ weather_temp_units) if is_number(temp_max) and temp_min != temp_max }}
+                                        {%- set unit_separator = "" if compact_unit_display else " " -%}
+                                        {%- set temp_low = (temp_min | round(0) ~ unit_separator ~ weather_temp_units) if is_number(temp_min) else "" -%}
+                                        {%- set temp_high = (temp_max | round(0) ~ unit_separator ~ weather_temp_units) if is_number(temp_max) and temp_min != temp_max else "" -%}
+                                        {%- set temps = [temp_high, temp_low] if weather_forecast_max_first else [temp_low, temp_high] -%}
+                                        {{ temps | reject("eq", "") | join(" / ") }}
                                   - if: '{{ (is_number(temp_min) or is_number(temp_max)) and temperature_string is string and temperature_string | length > 0 }}'
                                     then:
                                       - action: 'esphome.{{ action_prefix }}_component_text_list'
@@ -13724,16 +13773,4 @@ actions:
                 }}
               sequence:
                 - *display_value
-
-      - alias: Wake-up
-        conditions:
-          - condition: trigger
-            id: wake_up_sensors
-        sequence:
-          - action: 'esphome.{{ action_prefix }}_component_val'
-            data:
-              page: mem
-              id: wake_up
-              val: 1  # reset timers
-            continue_on_error: true
 ...

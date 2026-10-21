@@ -59,6 +59,11 @@ Most of the weather integrations are supported, however some may be able to prov
 
 We run all of our tests with "Accuweather", so the parameters shown on the panel are targetting this integration and will be shown with your integration when available.
 
+### Weather pages - Show maximum temperature first
+
+The weather pages show the forecast temperatures as `<min> / <max>` by default.
+Enable this option to show them as `<max> / <min>`.
+
 ### Outdoor temperature Sensor (Optional)
 
 Optionally, the value of an outdoor temperature sensor can be used here.
@@ -158,6 +163,8 @@ The entity that should be switched with the left/right hardware button.
 ### Left/Right Hardware Button Name - Label (Optional)
 
 Text on the screen above the corresponding hardware button, shown on the pages selected in [Labels Pages](#labels-pages).
+While Home Assistant is not connected, the label is dimmed, as the button has no effect.
+This does not apply when the button controls its relay locally or with [Activate Relay x local Fallback](#activate-relay-x-local-fallback-optional), as the button keeps working.
 
 ### Left/Right Hardware Button hold assignment - VALUE (optional)
 
@@ -284,6 +291,14 @@ data:
 > with a default such as `nspanel_easy_ref: latest` under `substitutions:`)
 > and pass the tag when compiling: `esphome -s nspanel_easy_ref v<version> compile <config>.yaml`.
 > Do not name this substitution `version`, as that name is already used by NSPanel Easy for the firmware version.
+
+## Screensaver
+
+### Wake-up sensors (Optional)
+
+Binary sensors (like motion, occupancy, doors or windows) that wake up the panel when they turn `On`.
+The panel is kept on while any of these sensors is `On`, and the dim and sleep timeouts start counting once all of them are `Off`.
+While Home Assistant is disconnected, the sensors are ignored.
 
 ## Advanced Settings
 
