@@ -10611,11 +10611,15 @@ actions:
                                   - if: '{{ preset_modes_raw | length > 0 }}'
                                     then:
                                       - variables:
-                                          # The picker pages through up to 32 options; current is always included
+                                          # The picker pages through up to 32 options; a supported current preset is always included
                                           preset_modes_truncated: >
                                             {%- if preset_modes_raw | length <= 32 -%}
                                               {{ preset_modes_raw }}
-                                            {%- elif current_preset_mode | length == 0 or current_preset_mode in preset_modes_raw[:32] -%}
+                                            {%- elif
+                                              current_preset_mode | length == 0 or
+                                              current_preset_mode not in preset_modes_raw or
+                                              current_preset_mode in preset_modes_raw[:32]
+                                            -%}
                                               {{ preset_modes_raw[:32] }}
                                             {%- else -%}
                                               {{ [current_preset_mode] + (preset_modes_raw[:31] | reject("equalto", current_preset_mode) | list) }}
