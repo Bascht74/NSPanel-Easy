@@ -9,6 +9,12 @@ on:
 permissions:
   contents: write  # Required for auto-commit
 
+# One run per pull request (or per ref for manual runs): a newer push supersedes a run still working
+# on an older commit; keyed by number, as pull requests from different forks can share a branch name
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   clang-format-checking:
     name: Clang Format
@@ -26,6 +32,9 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: step-security/changed-files@v47.0.5
         with:
+          # The git mode fetches with `-u` into the checked-out branch, moving HEAD to a newer
+          # commit without updating the working tree; the auto-commit below then reverts that commit
+          use_rest_api: true
           files: |
             **/*.h
             **/*.c
@@ -77,6 +86,11 @@ jobs:
         with:
           commit_message: "style: apply clang-format"
           commit_options: "--no-verify"
+          # Only formatter output can be committed, never a stale copy of any other file
+          file_pattern: >-
+            :(glob)components/nspanel_easy/**/*.h
+            :(glob)components/nspanel_easy/**/*.c
+            :(glob)components/nspanel_easy/**/*.cpp
 
   # ===========================================================================
   # Gate — required status check for branch protection
