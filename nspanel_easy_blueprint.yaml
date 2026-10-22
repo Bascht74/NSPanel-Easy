@@ -1520,6 +1520,7 @@ blueprint:
           name: Left hardware button - Label icon
           description: >
             Icon displayed as label when the label type is `Icon`.
+            If not set, the icon of the entity controlled by the button is used, falling back to its domain icon.
 
             Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
             for the supported icons.
@@ -1615,6 +1616,7 @@ blueprint:
           name: Right hardware button - Label icon
           description: >
             Icon displayed as label when the label type is `Icon`.
+            If not set, the icon of the entity controlled by the button is used, falling back to its domain icon.
 
             Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
             for the supported icons.
@@ -8322,32 +8324,50 @@ actions:
                         sequence:
                           - variables:
                               hw_buttons_labels_pages: !input hw_buttons_labels_pages
-                              # Label sent to the display: the text, or the icon glyph when the label type is `Icon`
-                              # (an unsupported icon is shown as `unknown`, an empty one clears the label)
+                          # Left button label: when the label type is `Icon`, the icon is resolved like elsewhere,
+                          # the selected icon first, then the controlled entity's icon, device class or domain
+                          - variables:
+                              entity_id: '{{ hardware.buttons.left.entity if hardware.buttons.left.entity_is_valid else None }}'
+                              forced_icon_state: '{{ None }}'
+                              overlap:
+                                icon: '{{ hardware.buttons.left.icon | default(None, true) }}'
+                                icon_color: '{{ None }}'
+                                name: '{{ None }}'
+                          - *variable_entity
+                          - variables:
                               hw_button_left_label: >-
                                 {%- if hardware.buttons.left.label_type == "Icon" -%}
-                                  {%- set icon = hardware.buttons.left.icon | default("", true) | string -%}
-                                  {%- if icon == "" -%}
-                                    {{ "" }}
-                                  {%- elif icon.startswith("mdi:") and icon[4:] in all_icons -%}
-                                    {{ all_icons[icon[4:]] }}
+                                  {%- if overlap_icon_valid -%}
+                                    {{ all_icons[overlap.icon.split(":")[1]] }}
+                                  {%- elif entity_id_valid -%}
+                                    {{ entity.icon }}
                                   {%- else -%}
-                                    {{ all_icons["unknown"] }}
+                                    {{ all_icons.unknown }}
                                   {%- endif -%}
                                 {%- elif hardware.buttons.left.label_type == "Text" -%}
                                   {{ hardware.buttons.left.name | default("", true) | string }}
                                 {%- else -%}
                                   {{ "" }}
                                 {%- endif -%}
+                          # Right button label: when the label type is `Icon`, the icon is resolved like elsewhere,
+                          # the selected icon first, then the controlled entity's icon, device class or domain
+                          - variables:
+                              entity_id: '{{ hardware.buttons.right.entity if hardware.buttons.right.entity_is_valid else None }}'
+                              forced_icon_state: '{{ None }}'
+                              overlap:
+                                icon: '{{ hardware.buttons.right.icon | default(None, true) }}'
+                                icon_color: '{{ None }}'
+                                name: '{{ None }}'
+                          - *variable_entity
+                          - variables:
                               hw_button_right_label: >-
                                 {%- if hardware.buttons.right.label_type == "Icon" -%}
-                                  {%- set icon = hardware.buttons.right.icon | default("", true) | string -%}
-                                  {%- if icon == "" -%}
-                                    {{ "" }}
-                                  {%- elif icon.startswith("mdi:") and icon[4:] in all_icons -%}
-                                    {{ all_icons[icon[4:]] }}
+                                  {%- if overlap_icon_valid -%}
+                                    {{ all_icons[overlap.icon.split(":")[1]] }}
+                                  {%- elif entity_id_valid -%}
+                                    {{ entity.icon }}
                                   {%- else -%}
-                                    {{ all_icons["unknown"] }}
+                                    {{ all_icons.unknown }}
                                   {%- endif -%}
                                 {%- elif hardware.buttons.right.label_type == "Text" -%}
                                   {{ hardware.buttons.right.name | default("", true) | string }}
