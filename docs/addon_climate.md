@@ -93,6 +93,12 @@ The following keys are available to be used in your `substitutions`:
 - For more details on the keys, see [ESPHome Base Climate Configurations](https://esphome.io/components/climate/index.html#base-climate-configuration)
   and [ESPHome Climate Thermostat - Additional actions behavior](https://esphome.io/components/climate/thermostat.html#additional-actions-behavior).
 
+## Modes
+
+The climate page shows only the HVAC modes supported by the thermostat, based on its configuration.
+With the default configuration, the `heat` add-on offers `Heat` and `Off`, the `cool` add-on offers `Cool` and `Off`, and the `dual` add-on offers `Heat/Cool`, `Heat`, `Cool` and `Off`.
+If you customize `thermostat_embedded` to support more modes (e.g. `auto_mode`, `dry_action` or `fan_only_action`), the matching buttons are shown automatically.
+
 ## Presets
 
 The thermostat presets are available on the climate page through the preset button, which opens a list with the available presets.
