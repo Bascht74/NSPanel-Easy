@@ -156,6 +156,36 @@ constexpr IconData climate_action_icons[] = {
     {Icons::MDI_FAN, Colors::RGB565_CYAN}               // CLIMATE_ACTION_FAN (6)
 };
 
+/**
+ * @struct ClimateModeButton
+ * @brief HVAC mode button on the climate page, used for the embedded thermostat.
+ *
+ * Each button selects one ClimateMode. The button is shown only when the
+ * thermostat traits support that mode, so the page matches the configuration.
+ */
+struct ClimateModeButton {
+  const char *name;             ///< Component name, without page prefix (`vis` does not accept one)
+  const char *font_color_path;  ///< Component path with page prefix, for the font color
+  ClimateMode mode;             ///< HVAC mode selected by the button
+  uint16_t color_active;        ///< Font color when the mode is active
+  uint16_t color_inactive;      ///< Font color when the mode is supported but not active
+};
+
+/**
+ * @brief HVAC mode buttons on the climate page, in display order.
+ *
+ * Components and modes match the `climate,hvac_mode,<mode>` events sent by the HMI.
+ */
+constexpr ClimateModeButton CLIMATE_MODE_BUTTONS[] = {
+    {"button01", "climate.button01", CLIMATE_MODE_AUTO, Colors::RGB565_GREEN, Colors::RGB565_GRAY_LIGHT},
+    {"button02", "climate.button02", CLIMATE_MODE_HEAT_COOL, Colors::RGB565_WHITE, Colors::RGB565_GRAY_LIGHT},
+    {"button03", "climate.button03", CLIMATE_MODE_HEAT, Colors::RGB565_DEEP_ORANGE, Colors::RGB565_GRAY_LIGHT},
+    {"button04", "climate.button04", CLIMATE_MODE_COOL, Colors::RGB565_BLUE, Colors::RGB565_GRAY_LIGHT},
+    {"button05", "climate.button05", CLIMATE_MODE_DRY, Colors::RGB565_ORANGE, Colors::RGB565_GRAY_LIGHT},
+    {"button06", "climate.button06", CLIMATE_MODE_FAN_ONLY, Colors::RGB565_CYAN, Colors::RGB565_GRAY_LIGHT},
+    {"button07", "climate.button07", CLIMATE_MODE_OFF, Colors::RGB565_BLUE_INDIGO, Colors::RGB565_GRAY},
+};
+
 }  // namespace esphome::nspanel_easy
 
 #endif  // NSPANEL_EASY_ADDON_CLIMATE_BASE

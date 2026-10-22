@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write  # Required for auto-commit
+  pull-requests: read  # Required by changed-files to list the pull request files with the REST API
 
 # One run per pull request (or per ref for manual runs): a newer push supersedes a run still working
 # on an older commit; keyed by number, as pull requests from different forks can share a branch name
@@ -86,10 +87,11 @@ jobs:
         with:
           commit_message: "style: apply clang-format"
           commit_options: "--no-verify"
-          # Only formatter output can be committed, never a stale copy of any other file
+          # Only formatter output can be committed, never a stale copy of any other file.
+          # Every pattern must match a tracked file, as `git add` fails on a pattern matching none
+          # (there are no `.c` files in the component).
           file_pattern: >-
             :(glob)components/nspanel_easy/**/*.h
-            :(glob)components/nspanel_easy/**/*.c
             :(glob)components/nspanel_easy/**/*.cpp
 
   # ===========================================================================

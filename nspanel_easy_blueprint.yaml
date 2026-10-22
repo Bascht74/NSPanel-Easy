@@ -1497,15 +1497,36 @@ blueprint:
           default: []
           selector:
             action:
-        left_button_name:
-          name: Left hardware button - Label
+        left_button_label_type:
+          name: Left hardware button - Label type
           description: >
-            Label which should be displayed (10 characters are supported).
+            Select whether the label shows the text or the icon set below.
 
             ***Note:** This label is not visible on the US landscape model.*
+          default: Text
+          selector: &hardware-button-label-type-selector
+            select:
+              options:
+                - Text
+                - Icon
+        left_button_name:
+          name: Left hardware button - Label text
+          description: >
+            Text displayed as label when the label type is `Text` (10 characters are supported).
           default: ""
           selector:
             text:
+        left_button_icon:
+          name: Left hardware button - Label icon
+          description: >
+            Icon displayed as label when the label type is `Icon`.
+            If not set, the icon of the state indicator entity (or of the controlled entity, when no state indicator
+            entity is set) is used, falling back to its device class and domain icons.
+
+            Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
+            for the supported icons.
+          default: ""
+          selector: *selector_icon
         left_button_hold_select:
           name: Left hardware button hold assignment
           description: "Select what should happen on hold."
@@ -1577,15 +1598,32 @@ blueprint:
           default: []
           selector:
             action:
-        right_button_name:
-          name: Right hardware button - Label
+        right_button_label_type:
+          name: Right hardware button - Label type
           description: >
-            Label which should be displayed (10 characters are supported).
+            Select whether the label shows the text or the icon set below.
 
             ***Note:** This label is not visible on the US landscape model.*
+          default: Text
+          selector: *hardware-button-label-type-selector
+        right_button_name:
+          name: Right hardware button - Label text
+          description: >
+            Text displayed as label when the label type is `Text` (10 characters are supported).
           default: ""
           selector:
             text:
+        right_button_icon:
+          name: Right hardware button - Label icon
+          description: >
+            Icon displayed as label when the label type is `Icon`.
+            If not set, the icon of the state indicator entity (or of the controlled entity, when no state indicator
+            entity is set) is used, falling back to its device class and domain icons.
+
+            Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
+            for the supported icons.
+          default: ""
+          selector: *selector_icon
         right_button_hold_select:
           name: Right hardware button hold assignment
           description: "Select what should happen on hold."
@@ -5098,7 +5136,7 @@ variables:
   # action or a new field in an existing one. The versioning workflow replaces 'next' by the version
   # being released. Releases that keep the contract leave it unchanged, so older firmware keeps working.
   # While it is 'next' (development builds), the minimum firmware check is skipped.
-  min_esphome_version: 2026.10.6
+  min_esphome_version: next
 
   # API version [MAJOR, MINOR] this Blueprint uses, matching api_version in
   # esphome/nspanel_esphome_version.yaml. Raise MINOR when the Blueprint starts calling a new API action,
@@ -7921,7 +7959,9 @@ actions:
                                 state_entity: '{{ hw_button_left_state_entity }}'
                                 state_entity_is_valid: >
                                   {{ hw_button_left_state_entity is defined and hw_button_left_state_entity is string and hw_button_left_state_entity.split(".") | count == 2 }}
+                                label_type: !input 'left_button_label_type'
                                 name: !input 'left_button_name'
+                                icon: !input 'left_button_icon'
                                 hold_select: !input 'left_button_hold_select'
                                 bar_always_visible: !input hw_button_bar_left_always_show
                               right:
@@ -7930,7 +7970,9 @@ actions:
                                 state_entity: '{{ hw_button_right_state_entity }}'
                                 state_entity_is_valid: >
                                   {{ hw_button_right_state_entity is defined and hw_button_right_state_entity is string and hw_button_right_state_entity.split(".") | count == 2 }}
+                                label_type: !input 'right_button_label_type'
                                 name: !input 'right_button_name'
+                                icon: !input 'right_button_icon'
                                 hold_select: !input 'right_button_hold_select'
                                 bar_always_visible: !input hw_button_bar_right_always_show
 
@@ -8284,6 +8326,66 @@ actions:
                         sequence:
                           - variables:
                               hw_buttons_labels_pages: !input hw_buttons_labels_pages
+                          # Left button label: when the label type is `Icon`, the icon is resolved like elsewhere,
+                          # the selected icon first, then the state indicator (or controlled) entity's icon, device class or domain
+                          - variables:
+                              entity_id: >-
+                                {{
+                                  hardware.buttons.left.state_entity if hardware.buttons.left.state_entity_is_valid
+                                  else hardware.buttons.left.entity if hardware.buttons.left.entity_is_valid
+                                  else None
+                                }}
+                              forced_icon_state: '{{ None }}'
+                              overlap:
+                                icon: '{{ hardware.buttons.left.icon | default(None, true) }}'
+                                icon_color: '{{ None }}'
+                                name: '{{ None }}'
+                          - *variable_entity
+                          - variables:
+                              hw_button_left_label: >-
+                                {%- if hardware.buttons.left.label_type == "Icon" -%}
+                                  {%- if overlap_icon_valid -%}
+                                    {{ all_icons[overlap.icon.split(":")[1]] }}
+                                  {%- elif entity_id_valid -%}
+                                    {{ entity.icon }}
+                                  {%- else -%}
+                                    {{ all_icons.unknown }}
+                                  {%- endif -%}
+                                {%- elif hardware.buttons.left.label_type == "Text" -%}
+                                  {{ hardware.buttons.left.name | default("", true) | string }}
+                                {%- else -%}
+                                  {{ "" }}
+                                {%- endif -%}
+                          # Right button label: when the label type is `Icon`, the icon is resolved like elsewhere,
+                          # the selected icon first, then the state indicator (or controlled) entity's icon, device class or domain
+                          - variables:
+                              entity_id: >-
+                                {{
+                                  hardware.buttons.right.state_entity if hardware.buttons.right.state_entity_is_valid
+                                  else hardware.buttons.right.entity if hardware.buttons.right.entity_is_valid
+                                  else None
+                                }}
+                              forced_icon_state: '{{ None }}'
+                              overlap:
+                                icon: '{{ hardware.buttons.right.icon | default(None, true) }}'
+                                icon_color: '{{ None }}'
+                                name: '{{ None }}'
+                          - *variable_entity
+                          - variables:
+                              hw_button_right_label: >-
+                                {%- if hardware.buttons.right.label_type == "Icon" -%}
+                                  {%- if overlap_icon_valid -%}
+                                    {{ all_icons[overlap.icon.split(":")[1]] }}
+                                  {%- elif entity_id_valid -%}
+                                    {{ entity.icon }}
+                                  {%- else -%}
+                                    {{ all_icons.unknown }}
+                                  {%- endif -%}
+                                {%- elif hardware.buttons.right.label_type == "Text" -%}
+                                  {{ hardware.buttons.right.name | default("", true) | string }}
+                                {%- else -%}
+                                  {{ "" }}
+                                {%- endif -%}
                           ### LABELS Pages ###
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
                             data:
@@ -8320,7 +8422,7 @@ actions:
                               page: mem
                               id: button_left_label
                               txt_list:
-                                - '{{ hardware.buttons.left.name }}'
+                                - '{{ hw_button_left_label }}'
                             continue_on_error: true
                           - *delay_boot
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
@@ -8328,7 +8430,7 @@ actions:
                               page: mem
                               id: button_right_label
                               txt_list:
-                                - '{{ hardware.buttons.right.name }}'
+                                - '{{ hw_button_right_label }}'
                             continue_on_error: true
                           - *delay_boot
 

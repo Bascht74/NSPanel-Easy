@@ -574,7 +574,8 @@ script:
       - script.execute: wakeup_page_update
       - lambda: |-
           #ifdef NSPANEL_EASY_SUBSCRIBE
-          // Sensor states are stale while disconnected, and are re-applied on reconnection
+          // Sensor states are stale while disconnected, so they are released and forgotten, and applied again as
+          // Home Assistant sends them on reconnection
           wakeup_sensors_connection_update(api_server->is_connected_with_state_subscription());
           #endif  // NSPANEL_EASY_SUBSCRIBE
 
