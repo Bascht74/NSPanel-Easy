@@ -1502,8 +1502,8 @@ blueprint:
           description: >
             Label which should be displayed (10 characters are supported).
 
-            Icons can be used in place of words, alone or mixed with text, by entering
-            the icon name with the `mdi:` prefix (e.g. `mdi:lightbulb` or `mdi:lightbulb Kitchen`).
+            An icon can be shown instead of text by entering only the icon name with the
+            `mdi:` prefix (e.g. `mdi:lightbulb`). Icons cannot be mixed with text.
             Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
             for the supported icons.
 
@@ -1587,8 +1587,8 @@ blueprint:
           description: >
             Label which should be displayed (10 characters are supported).
 
-            Icons can be used in place of words, alone or mixed with text, by entering
-            the icon name with the `mdi:` prefix (e.g. `mdi:lightbulb` or `mdi:lightbulb Kitchen`).
+            An icon can be shown instead of text by entering only the icon name with the
+            `mdi:` prefix (e.g. `mdi:lightbulb`). Icons cannot be mixed with text.
             Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
             for the supported icons.
 
@@ -8294,21 +8294,15 @@ actions:
                         sequence:
                           - variables:
                               hw_buttons_labels_pages: !input hw_buttons_labels_pages
-                              # Words in the `mdi:<icon>` form are replaced by the icon glyph
+                              # A label in the `mdi:<icon>` form is replaced by the icon glyph
                               hw_button_left_label: >-
-                                {%- set ns = namespace(words=[]) -%}
-                                {%- for word in (hardware.buttons.left.name | string).split(" ") -%}
-                                  {%- set icon_name = word[4:] if word.startswith("mdi:") else "" -%}
-                                  {%- set ns.words = ns.words + [all_icons[icon_name] if icon_name in all_icons else word] -%}
-                                {%- endfor -%}
-                                {{ ns.words | join(" ") }}
+                                {%- set label = hardware.buttons.left.name | string -%}
+                                {%- set icon_name = label.strip()[4:] if label.strip().startswith("mdi:") else "" -%}
+                                {{ all_icons[icon_name] if icon_name in all_icons else label }}
                               hw_button_right_label: >-
-                                {%- set ns = namespace(words=[]) -%}
-                                {%- for word in (hardware.buttons.right.name | string).split(" ") -%}
-                                  {%- set icon_name = word[4:] if word.startswith("mdi:") else "" -%}
-                                  {%- set ns.words = ns.words + [all_icons[icon_name] if icon_name in all_icons else word] -%}
-                                {%- endfor -%}
-                                {{ ns.words | join(" ") }}
+                                {%- set label = hardware.buttons.right.name | string -%}
+                                {%- set icon_name = label.strip()[4:] if label.strip().startswith("mdi:") else "" -%}
+                                {{ all_icons[icon_name] if icon_name in all_icons else label }}
                           ### LABELS Pages ###
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
                             data:
