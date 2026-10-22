@@ -51,11 +51,18 @@ void wakeup_sensors_connection_update(bool connected) {
   was_connected = connected;
 
   if (connected) {
-    // A state that did not change while disconnected is not delivered again, so the
-    // bindings are re-applied from their last known state
-    sub_render_all();
-    return;
+    return;  // Home Assistant sends every subscribed state again when it connects
   }  // if (connected)
+
+  // The cached states are forgotten, so the states sent again on reconnection are applied even
+  // when unchanged (they would be skipped as duplicates otherwise). Re-applying a cached state
+  // instead could restore a sensor that changed while disconnected.
+  for (uint16_t idx = 0; idx < sub_count; idx++) {
+    if (sub_renderers[idx] == &wakeup_sensor_render) {
+      sub_runtime[idx].state[0] = '\0';
+      sub_runtime[idx].action[0] = '\0';  // hvac_action, used by climate bindings only
+    }  // if (wakeup binding)
+  }  // for (idx)
 
   if (!wakeup_sensors_active()) {
     return;
