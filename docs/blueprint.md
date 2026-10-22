@@ -160,9 +160,17 @@ If the NSPanel loses Wi-Fi connection or HA is down, the hardware button can the
 
 The entity that should be switched with the left/right hardware button.
 
-### Left/Right Hardware Button Name - Label (Optional)
+### Left/Right Hardware Button - Label (Optional)
 
-Text on the screen above the corresponding hardware button, shown on the pages selected in [Labels Pages](#labels-pages).
+Label on the screen above the corresponding hardware button, shown on the pages selected in [Labels Pages](#labels-pages).
+It can show a text or an icon:
+
+- **Label type:** `Text` (default) shows the label text, and `Icon` shows the label icon.
+- **Label text:** text shown when the label type is `Text` (10 characters are supported).
+- **Label icon:** icon shown when the label type is `Icon`, from the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html).
+  If not set, the icon of the state indicator entity is used (or of the controlled entity, when no state indicator entity is set), falling back to its device class and domain icons.
+  The icon is resolved when the panel syncs with the Blueprint, and does not change with the entity state.
+
 While Home Assistant is not connected, the label is dimmed, as the button has no effect.
 This does not apply when the button controls its relay locally or with [Activate Relay x local Fallback](#activate-relay-x-local-fallback-optional), as the button keeps working.
 
