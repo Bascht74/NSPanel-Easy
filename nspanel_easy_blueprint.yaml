@@ -1497,20 +1497,34 @@ blueprint:
           default: []
           selector:
             action:
-        left_button_name:
-          name: Left hardware button - Label
+        left_button_label_type:
+          name: Left hardware button - Label type
           description: >
-            Label which should be displayed (10 characters are supported).
-
-            An icon can be shown instead of text by entering only the icon name with the
-            `mdi:` prefix (e.g. `mdi:lightbulb`). Icons cannot be mixed with text.
-            Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
-            for the supported icons.
+            Select whether the label shows the text or the icon set below.
 
             ***Note:** This label is not visible on the US landscape model.*
+          default: Text
+          selector: &hardware-button-label-type-selector
+            select:
+              options:
+                - Text
+                - Icon
+        left_button_name:
+          name: Left hardware button - Label text
+          description: >
+            Text displayed as label when the label type is `Text` (10 characters are supported).
           default: ""
           selector:
             text:
+        left_button_icon:
+          name: Left hardware button - Label icon
+          description: >
+            Icon displayed as label when the label type is `Icon`.
+
+            Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
+            for the supported icons.
+          default: ""
+          selector: *selector_icon
         left_button_hold_select:
           name: Left hardware button hold assignment
           description: "Select what should happen on hold."
@@ -1582,20 +1596,30 @@ blueprint:
           default: []
           selector:
             action:
-        right_button_name:
-          name: Right hardware button - Label
+        right_button_label_type:
+          name: Right hardware button - Label type
           description: >
-            Label which should be displayed (10 characters are supported).
-
-            An icon can be shown instead of text by entering only the icon name with the
-            `mdi:` prefix (e.g. `mdi:lightbulb`). Icons cannot be mixed with text.
-            Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
-            for the supported icons.
+            Select whether the label shows the text or the icon set below.
 
             ***Note:** This label is not visible on the US landscape model.*
+          default: Text
+          selector: *hardware-button-label-type-selector
+        right_button_name:
+          name: Right hardware button - Label text
+          description: >
+            Text displayed as label when the label type is `Text` (10 characters are supported).
           default: ""
           selector:
             text:
+        right_button_icon:
+          name: Right hardware button - Label icon
+          description: >
+            Icon displayed as label when the label type is `Icon`.
+
+            Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
+            for the supported icons.
+          default: ""
+          selector: *selector_icon
         right_button_hold_select:
           name: Right hardware button hold assignment
           description: "Select what should happen on hold."
@@ -7931,7 +7955,9 @@ actions:
                                 state_entity: '{{ hw_button_left_state_entity }}'
                                 state_entity_is_valid: >
                                   {{ hw_button_left_state_entity is defined and hw_button_left_state_entity is string and hw_button_left_state_entity.split(".") | count == 2 }}
+                                label_type: !input 'left_button_label_type'
                                 name: !input 'left_button_name'
+                                icon: !input 'left_button_icon'
                                 hold_select: !input 'left_button_hold_select'
                                 bar_always_visible: !input hw_button_bar_left_always_show
                               right:
@@ -7940,7 +7966,9 @@ actions:
                                 state_entity: '{{ hw_button_right_state_entity }}'
                                 state_entity_is_valid: >
                                   {{ hw_button_right_state_entity is defined and hw_button_right_state_entity is string and hw_button_right_state_entity.split(".") | count == 2 }}
+                                label_type: !input 'right_button_label_type'
                                 name: !input 'right_button_name'
+                                icon: !input 'right_button_icon'
                                 hold_select: !input 'right_button_hold_select'
                                 bar_always_visible: !input hw_button_bar_right_always_show
 
@@ -8294,15 +8322,38 @@ actions:
                         sequence:
                           - variables:
                               hw_buttons_labels_pages: !input hw_buttons_labels_pages
-                              # A label in the `mdi:<icon>` form is replaced by the icon glyph
+                              # Label sent to the display: the text, or the icon glyph when the label type is `Icon`
+                              # (an unsupported icon is shown as `unknown`, an empty one clears the label)
                               hw_button_left_label: >-
-                                {%- set label = hardware.buttons.left.name | string -%}
-                                {%- set icon_name = label.strip()[4:] if label.strip().startswith("mdi:") else "" -%}
-                                {{ all_icons[icon_name] if icon_name in all_icons else label }}
+                                {%- if hardware.buttons.left.label_type == "Icon" -%}
+                                  {%- set icon = hardware.buttons.left.icon | default("", true) | string -%}
+                                  {%- if icon == "" -%}
+                                    {{ "" }}
+                                  {%- elif icon.startswith("mdi:") and icon[4:] in all_icons -%}
+                                    {{ all_icons[icon[4:]] }}
+                                  {%- else -%}
+                                    {{ all_icons["unknown"] }}
+                                  {%- endif -%}
+                                {%- elif hardware.buttons.left.label_type == "Text" -%}
+                                  {{ hardware.buttons.left.name | default("", true) | string }}
+                                {%- else -%}
+                                  {{ "" }}
+                                {%- endif -%}
                               hw_button_right_label: >-
-                                {%- set label = hardware.buttons.right.name | string -%}
-                                {%- set icon_name = label.strip()[4:] if label.strip().startswith("mdi:") else "" -%}
-                                {{ all_icons[icon_name] if icon_name in all_icons else label }}
+                                {%- if hardware.buttons.right.label_type == "Icon" -%}
+                                  {%- set icon = hardware.buttons.right.icon | default("", true) | string -%}
+                                  {%- if icon == "" -%}
+                                    {{ "" }}
+                                  {%- elif icon.startswith("mdi:") and icon[4:] in all_icons -%}
+                                    {{ all_icons[icon[4:]] }}
+                                  {%- else -%}
+                                    {{ all_icons["unknown"] }}
+                                  {%- endif -%}
+                                {%- elif hardware.buttons.right.label_type == "Text" -%}
+                                  {{ hardware.buttons.right.name | default("", true) | string }}
+                                {%- else -%}
+                                  {{ "" }}
+                                {%- endif -%}
                           ### LABELS Pages ###
                           - action: 'esphome.{{ action_prefix }}_component_text_list'
                             data:
