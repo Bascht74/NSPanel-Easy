@@ -410,13 +410,13 @@ script:
           if (current_page_id == get_page_id("home")) {
             background = "pic_background_main";
             fill = XSTR_FILL_CROP_IMAGE;
-            left = is_eu ? LabelPosition{47, 288} : LabelPosition{16, 448};
-            right = is_eu ? LabelPosition{288, 288} : LabelPosition{184, 448};
+            left = is_eu ? LabelPosition{47, 286} : LabelPosition{16, 446};
+            right = is_eu ? LabelPosition{288, 286} : LabelPosition{184, 446};
           } else if (current_page_id == get_page_id("screensaver")) {
             background = "screensaver_bco";
             fill = XSTR_FILL_SOLID_COLOR;
-            left = is_eu ? LabelPosition{47, 288} : LabelPosition{16, 448};
-            right = is_eu ? LabelPosition{288, 288} : LabelPosition{184, 448};
+            left = is_eu ? LabelPosition{47, 286} : LabelPosition{16, 446};
+            right = is_eu ? LabelPosition{288, 286} : LabelPosition{184, 446};
           } else {
             if (show) ESP_LOGW("${TAG_HW_BUTTONS}", "Labels not supported on page '%s'", page_names[current_page_id]);
             return;
@@ -445,9 +445,20 @@ script:
           }  // if (!api_server->is_connected_with_state_subscription())
 
           static constexpr uint16_t LABEL_WIDTH = 120;
-          static constexpr uint16_t LABEL_HEIGHT = 20;
-          static constexpr uint8_t LABEL_FONT_ID = 1;
+          static constexpr uint16_t LABEL_HEIGHT = 24;             // Fits the icon font and clears a previous icon
+          static constexpr uint8_t LABEL_FONT_ID = 1;              // Text font (no icons)
+          static constexpr uint8_t LABEL_ICON_FONT_ID = 7;         // Icons font (icons and Latin-1 only)
+          static constexpr uint32_t ICON_CODE_POINT_MIN = 0xE000;  // First MDI code point (see all_icons.h)
+          static constexpr uint32_t ICON_CODE_POINT_MAX = 0xFD16;  // Last MDI code point (see all_icons.h)
           auto draw_label = [&](const LabelPosition &position, const std::string &label, uint16_t color) {
+            // A label made of a single icon (3-byte UTF-8 sequence) is drawn with the icons font
+            uint8_t font_id = LABEL_FONT_ID;
+            if (label.size() == 3) {
+              const uint32_t code_point = nspanel_easy::decode_nextion_icon_utf8(label.c_str(), label.size());
+              if (code_point >= ICON_CODE_POINT_MIN and code_point <= ICON_CODE_POINT_MAX) {
+                font_id = LABEL_ICON_FONT_ID;
+              }  // if (code_point in icons range)
+            }  // if (label.size() == 3)
             std::string escaped = label;
             for (size_t pos = 0; (pos = escaped.find('\\', pos)) != std::string::npos; pos += 2) {
               escaped.replace(pos, 1, "\\\\");
@@ -458,7 +469,7 @@ script:
             // xstr x,y,w,h,font,pco,bco,xcenter,ycenter,fill,"text" - an empty text clears the area
             disp1->send_command_printf("xstr %" PRIu16 ",%" PRIu16 ",%" PRIu16 ",%" PRIu16 ",%" PRIu8 ",%" PRIu16
                                        ",%s,1,1,%" PRIu8 ",\"%s\"",
-                                       position.x, position.y, LABEL_WIDTH, LABEL_HEIGHT, LABEL_FONT_ID, color,
+                                       position.x, position.y, LABEL_WIDTH, LABEL_HEIGHT, font_id, color,
                                        background, fill, escaped.c_str());
           };
           // An empty text only repaints the background, clearing the labels
