@@ -1520,7 +1520,8 @@ blueprint:
           name: Left hardware button - Label icon
           description: >
             Icon displayed as label when the label type is `Icon`.
-            If not set, the icon of the entity controlled by the button is used, falling back to its domain icon.
+            If not set, the icon of the state indicator entity (or of the controlled entity, when no state indicator
+            entity is set) is used, falling back to its device class and domain icons.
 
             Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
             for the supported icons.
@@ -1616,7 +1617,8 @@ blueprint:
           name: Right hardware button - Label icon
           description: >
             Icon displayed as label when the label type is `Icon`.
-            If not set, the icon of the entity controlled by the button is used, falling back to its domain icon.
+            If not set, the icon of the state indicator entity (or of the controlled entity, when no state indicator
+            entity is set) is used, falling back to its device class and domain icons.
 
             Check the [icon cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
             for the supported icons.
@@ -8325,9 +8327,14 @@ actions:
                           - variables:
                               hw_buttons_labels_pages: !input hw_buttons_labels_pages
                           # Left button label: when the label type is `Icon`, the icon is resolved like elsewhere,
-                          # the selected icon first, then the controlled entity's icon, device class or domain
+                          # the selected icon first, then the state indicator (or controlled) entity's icon, device class or domain
                           - variables:
-                              entity_id: '{{ hardware.buttons.left.entity if hardware.buttons.left.entity_is_valid else None }}'
+                              entity_id: >-
+                                {{
+                                  hardware.buttons.left.state_entity if hardware.buttons.left.state_entity_is_valid
+                                  else hardware.buttons.left.entity if hardware.buttons.left.entity_is_valid
+                                  else None
+                                }}
                               forced_icon_state: '{{ None }}'
                               overlap:
                                 icon: '{{ hardware.buttons.left.icon | default(None, true) }}'
@@ -8350,9 +8357,14 @@ actions:
                                   {{ "" }}
                                 {%- endif -%}
                           # Right button label: when the label type is `Icon`, the icon is resolved like elsewhere,
-                          # the selected icon first, then the controlled entity's icon, device class or domain
+                          # the selected icon first, then the state indicator (or controlled) entity's icon, device class or domain
                           - variables:
-                              entity_id: '{{ hardware.buttons.right.entity if hardware.buttons.right.entity_is_valid else None }}'
+                              entity_id: >-
+                                {{
+                                  hardware.buttons.right.state_entity if hardware.buttons.right.state_entity_is_valid
+                                  else hardware.buttons.right.entity if hardware.buttons.right.entity_is_valid
+                                  else None
+                                }}
                               forced_icon_state: '{{ None }}'
                               overlap:
                                 icon: '{{ hardware.buttons.right.icon | default(None, true) }}'
