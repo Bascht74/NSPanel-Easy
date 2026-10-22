@@ -537,9 +537,9 @@ Text button01
         Send Component ID       : on press and release
         Opacity                 : 127
         x coordinate            : 2
-        y coordinate            : 360
+        y coordinate            : 347
         Width                   : 45
-        Height                  : 45
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -573,9 +573,9 @@ Text button02
         Send Component ID       : on press and release
         Opacity                 : 127
         x coordinate            : 47
-        y coordinate            : 360
+        y coordinate            : 347
         Width                   : 45
-        Height                  : 45
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -609,9 +609,9 @@ Text button03
         Send Component ID       : on press and release
         Opacity                 : 127
         x coordinate            : 92
-        y coordinate            : 360
+        y coordinate            : 347
         Width                   : 45
-        Height                  : 45
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -645,9 +645,9 @@ Text button04
         Send Component ID       : on press and release
         Opacity                 : 127
         x coordinate            : 137
-        y coordinate            : 360
+        y coordinate            : 347
         Width                   : 45
-        Height                  : 45
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -681,9 +681,9 @@ Text button05
         Send Component ID       : on press and release
         Opacity                 : 127
         x coordinate            : 182
-        y coordinate            : 360
+        y coordinate            : 347
         Width                   : 45
-        Height                  : 45
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -717,9 +717,9 @@ Text button06
         Send Component ID       : on press and release
         Opacity                 : 127
         x coordinate            : 227
-        y coordinate            : 360
+        y coordinate            : 347
         Width                   : 45
-        Height                  : 45
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -753,9 +753,9 @@ Text button07
         Send Component ID       : on press and release
         Opacity                 : 127
         x coordinate            : 272
-        y coordinate            : 360
+        y coordinate            : 347
         Width                   : 45
-        Height                  : 45
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300

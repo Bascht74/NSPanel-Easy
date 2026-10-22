@@ -536,10 +536,10 @@ Text button01
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
-        x coordinate            : 25
-        y coordinate            : 261
-        Width                   : 48
-        Height                  : 48
+        x coordinate            : 2
+        y coordinate            : 245
+        Width                   : 66
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -572,10 +572,10 @@ Text button02
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
-        x coordinate            : 85
-        y coordinate            : 261
-        Width                   : 48
-        Height                  : 48
+        x coordinate            : 68
+        y coordinate            : 245
+        Width                   : 66
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -608,10 +608,10 @@ Text button03
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
-        x coordinate            : 145
-        y coordinate            : 261
-        Width                   : 48
-        Height                  : 48
+        x coordinate            : 134
+        y coordinate            : 245
+        Width                   : 66
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -644,10 +644,10 @@ Text button04
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
-        x coordinate            : 205
-        y coordinate            : 261
-        Width                   : 48
-        Height                  : 48
+        x coordinate            : 200
+        y coordinate            : 245
+        Width                   : 66
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -680,10 +680,10 @@ Text button05
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
-        x coordinate            : 265
-        y coordinate            : 261
-        Width                   : 48
-        Height                  : 48
+        x coordinate            : 266
+        y coordinate            : 245
+        Width                   : 66
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -716,10 +716,10 @@ Text button06
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
-        x coordinate            : 325
-        y coordinate            : 261
-        Width                   : 48
-        Height                  : 48
+        x coordinate            : 332
+        y coordinate            : 245
+        Width                   : 66
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
@@ -752,10 +752,10 @@ Text button07
         Dragging                : 0
         Send Component ID       : on press and release
         Opacity                 : 127
-        x coordinate            : 385
-        y coordinate            : 261
-        Width                   : 48
-        Height                  : 48
+        x coordinate            : 398
+        y coordinate            : 245
+        Width                   : 66
+        Height                  : 66
         Effect                  : load
         Effect Priority         : 0
         Effect Time             : 300
