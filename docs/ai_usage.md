@@ -5,7 +5,7 @@ This page describes how, so you know what to expect.
 
 ## What Is Automated
 
-- **Pull request reviews:** [Sourcery](https://sourcery.ai) and [CodeRabbit](https://coderabbit.ai)
+- **Pull request reviews:** [Sourcery](https://github.com/apps/sourcery-ai) and [CodeRabbit](https://github.com/apps/coderabbitai)
   automatically review pull requests. Their comments are suggestions; they do not approve or merge anything.
 
 Nothing else is triggered automatically. No bot replies to issues or discussions on its own.
@@ -37,9 +37,9 @@ Content you post publicly here (text, logs, configuration) may be shared with an
 analyzing it. Never post secrets such as API keys, passwords, Wi-Fi credentials, or tokens.
 Redact them before sharing logs or YAML.
 
-Private vulnerability reports, submitted as described in the [Security Policy](../SECURITY.md), are never shared with AI tools.
+Private vulnerability reports, submitted as described in the [Security Policy](https://github.com/edwardtfn/NSPanel-Easy/security/policy), are never shared with AI tools.
 
 ## Contributions Using AI
 
 AI-assisted contributions are welcome. You are expected to understand, test, and stand behind the code you submit.
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for the general contribution guidelines.
+See [CONTRIBUTING.md](https://github.com/edwardtfn/NSPanel-Easy/blob/main/CONTRIBUTING.md) for the general contribution guidelines.
