@@ -2,6 +2,7 @@
 
 Thank you for your interest in contributing to NSPanel Easy.
 This document covers everything you need to know before opening a pull request.
+All participants are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 

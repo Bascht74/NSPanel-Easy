@@ -95,6 +95,10 @@ Optional packages that extend the base firmware:
 Contributions of all kinds are welcome — code, documentation, translations, and
 testing. See [CONTRIBUTING.md](https://github.com/edwardtfn/NSPanel-Easy/blob/main/CONTRIBUTING.md)
 for guidelines, branching conventions, and how to run the local linters.
+All community spaces follow the
+[Code of Conduct](https://github.com/edwardtfn/NSPanel-Easy/blob/main/CODE_OF_CONDUCT.md), and security
+vulnerabilities must be reported privately, as described in the
+[Security Policy](https://github.com/edwardtfn/NSPanel-Easy/blob/main/SECURITY.md).
 
 Not a developer? You can still help by improving the docs, translating
 strings, testing open [pull requests](https://github.com/edwardtfn/NSPanel-Easy/pulls),
