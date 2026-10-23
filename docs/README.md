@@ -61,6 +61,8 @@ Optional packages that extend the base firmware:
   Home Assistant entity states, without an automation running per state change.
 - [Alarm Control Panel](alarm.md) — configure and secure alarm control from
   the panel.
+- [ESPHome Substitutions](substitutions.md) — every compile-time setting
+  available in your panel's YAML, with its default and what it changes.
 - [Customization](customization.md) — advanced examples: API encryption, custom
   OTA passwords, static IPs, reboot-on-API-failure, and more.
 - [MDI Icons Cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
