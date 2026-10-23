@@ -12,6 +12,7 @@ All participants are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md
 - [Commit Messages](#commit-messages)
 - [Code Style](#code-style)
 - [Branching](#branching)
+- [AI-Assisted Contributions](#ai-assisted-contributions)
 
 ---
 
@@ -92,3 +93,11 @@ but doing so before pushing will save you a round trip.
 Work on a feature branch and open a PR targeting `main`. There is no separate
 `dev` branch in the current workflow. Keep branches short-lived and scoped to
 a single logical change.
+
+---
+
+## AI-Assisted Contributions
+
+AI-assisted contributions are welcome. You are expected to understand, test, and stand behind the code you submit.
+
+For how AI is used by the maintainer in this project, see [How AI Is Used in This Project](docs/ai_usage.md).
