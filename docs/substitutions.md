@@ -51,7 +51,7 @@ substitutions:
 <!-- markdownlint-disable MD013 -->
 | Substitution | Default | Description |
 | :- | :- | :- |
-| `api_stale_grace_period` | `30s` | Time without Home Assistant before the values on display are indicated as stale. Chips, home custom buttons and the weather picture are then hidden, the indoor temperature falls back to the panel's own sensor, and the outdoor temperature and the home values are greyed out. Everything recovers as soon as Home Assistant is back. |
+| `api_stale_grace_period` | `30s` | Time without Home Assistant before the values on display are indicated as stale. Chips of Home Assistant entities, home custom buttons and the weather picture are then hidden (the relay and embedded thermostat chips are controlled locally and stay visible), the indoor temperature falls back to the panel's own sensor, and the outdoor temperature and the home values are greyed out. Everything recovers as soon as Home Assistant is back. |
 <!-- markdownlint-enable MD013 -->
 
 ## Hardware buttons
@@ -108,7 +108,7 @@ The defaults suit almost every installation, so change them only to solve a spec
 <!-- markdownlint-disable MD013 -->
 | Substitution | Default | Description |
 | :- | :- | :- |
-| `api_subscribe_entity_len` | `96` | Buffer size for an `entity_id` in an [API subscription](api_subscribe.md), including the null terminator. Raise it if a long `entity_id` is truncated. Accepts `32` to `255`; changing it discards the stored bindings once, and the Blueprint pushes them again. |
+| `api_subscribe_entity_len` | `96` | Buffer size for an `entity_id` in an [API subscription](api_subscribe.md), including the null terminator. An `entity_id` that does not fit is not bound and does not update; the log then reports the size to set. Accepts `32` to `255`; changing it discards the stored bindings once, and the Blueprint pushes them again. |
 | `api_subscribe_max` | `128` | Maximum number of [API subscription](api_subscribe.md#options) bindings. |
 | `api_subscribe_debounce` | `10s` | Quiet period after the last binding of a push before the panel restarts to apply it. See [API Subscriptions](api_subscribe.md#options). |
 | `api_subscribe_timeout` | `120s` | Time without an end marker before a push is committed unverified. See [API Subscriptions](api_subscribe.md#options). |

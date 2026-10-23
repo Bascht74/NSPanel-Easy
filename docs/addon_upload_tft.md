@@ -311,6 +311,7 @@ The TFT upload process requires a significant amount of free memory on the ESP32
 If Bluetooth is enabled (e.g. with the [Bluetooth Proxy add-on](addon_bluetooth_proxy.md)),
 this add-on stops the Bluetooth stack and releases its memory before the upload starts,
 so both can be enabled at the same time. The panel restarts after the upload, restoring Bluetooth.
+If the memory cannot be released, the log shows `Bluetooth memory release failed` and the upload is still attempted.
 
 Other memory-intensive customizations may still cause the upload to fail due to insufficient memory.
 In such cases, see the [Memory Optimization](install.md#memory-optimization-strategies)
