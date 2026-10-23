@@ -89,6 +89,8 @@ Optional packages that extend the base firmware:
 - **GitHub Issues** — [bug reports and feature requests](https://github.com/edwardtfn/NSPanel-Easy/issues).
 - **Home Assistant Community forum** — [NSPanel Easy thread](https://community.home-assistant.io/t/nspanel-easy-blueprint-configured-nspanel-customization/1005033)
   for longer-form discussion.
+- **AI usage** — [How AI Is Used in This Project](ai_usage.md) explains what is
+  automated, how to identify AI-assisted posts, and how your data is handled.
 
 ## Contributing
 

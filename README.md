@@ -293,6 +293,7 @@ Whether you need help, want to share your setup, or just want to follow along - 
 
 - **[GitHub Issues & Feature Requests](https://github.com/edwardtfn/NSPanel-Easy/issues)**
 - **[Discord Server][discord]**
+- **[How AI Is Used in This Project](docs/ai_usage.md)** - what is automated, how to identify AI-assisted posts, and how your data is handled
 
 ## Acknowledgements
 
