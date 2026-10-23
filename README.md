@@ -281,6 +281,8 @@ We welcome contributions of all kinds - code, documentation, translations, and t
 - **Pull Requests:** Open a PR against `main`. Each PR gets its own branch for development and review.
 - **Testing:** Browse [open Pull Requests](https://github.com/edwardtfn/NSPanel-Easy/pulls) to find features that need testing and feedback.
 - **Issues:** Report bugs or request features via [GitHub Issues](https://github.com/edwardtfn/NSPanel-Easy/issues).
+- **Security:** Report vulnerabilities privately, as described in the [Security Policy](SECURITY.md). Never use public issues for them.
+- **Code of Conduct:** All community spaces, including Discord, follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 - **Discussions:** Join the conversation on [Discord][discord].
 
 > [!TIP]
