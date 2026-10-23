@@ -7287,7 +7287,7 @@ actions:
 
             **How to Resolve This Issue**
 
-            Your Blueprint is already updated. To finish, update the firmware on your panel:
+            There is no need to update the Blueprint for now. To fix this, update the firmware on your panel:
 
             1. In ESPHome Device Builder, find your panel, select **Clean Build Files** in its 3-dot menu,
             then **Install** and **Wirelessly**.
