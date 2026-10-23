@@ -7296,7 +7296,7 @@ actions:
             This notification clears itself once everything is up to date.
 
             *For more detailed instructions, please refer to the online documentation:
-            [How to Update ESPHome](https://github.com/edwardtfn/NSPanel-Easy/blob/main/docs/howto.md#update-esphome).*
+            [How to Update the Firmware](https://github.com/edwardtfn/NSPanel-Easy/blob/main/docs/howto.md#update-esphome).*
             {% endif %}
         continue_on_error: true
       - alias: Custom action - ESPHome firmware outdated
