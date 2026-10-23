@@ -341,15 +341,7 @@ ensuring a smooth and hassle-free user experience.
 
 ### Updating Your NSPanel Firmware
 
-Regularly updating your NSPanel firmware ensures that you have the latest features and improvements from this project and ESPHome.
-To update your device's firmware to the latest version, simply follow the [Steps for OTA Updates](#steps-for-ota-updates) as outlined above.
-
-> [!IMPORTANT]  
-> This project comprises three integral parts: ESPHome, the TFT file, and the Blueprint.
-> It is crucial that all three components are updated to the same version to ensure compatibility and optimal performance.
-> When updating the ESPHome firmware, make sure to also update the TFT file and the Blueprint to the corresponding version.
-
-Keeping each component of the NSPanel HA Blueprint in sync with the same version enhances the stability and functionality of your smart panel.
+To update a running panel to the latest version, follow [Update NSPanel Easy](howto.md#update-nspanel-easy).
 
 #### Other
 
