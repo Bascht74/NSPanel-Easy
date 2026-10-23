@@ -282,7 +282,6 @@ We welcome contributions of all kinds - code, documentation, translations, and t
 - **Testing:** Browse [open Pull Requests](https://github.com/edwardtfn/NSPanel-Easy/pulls) to find features that need testing and feedback.
 - **Issues:** Report bugs or request features via [GitHub Issues](https://github.com/edwardtfn/NSPanel-Easy/issues).
 - **Discussions:** Join the conversation on [Discord][discord].
-- **AI Usage:** See [How AI Is Used in This Project](CONTRIBUTING.md#how-ai-is-used-in-this-project) for how AI assists with maintaining this project.
 
 > [!TIP]
 > Not a developer? You can still help by improving documentation, translating strings, testing open PRs,
@@ -294,6 +293,7 @@ Whether you need help, want to share your setup, or just want to follow along - 
 
 - **[GitHub Issues & Feature Requests](https://github.com/edwardtfn/NSPanel-Easy/issues)**
 - **[Discord Server][discord]**
+- **[How AI Is Used in This Project](docs/ai_usage.md)** - what is automated, how to identify AI-assisted posts, and how your data is handled
 
 ## Acknowledgements
 
