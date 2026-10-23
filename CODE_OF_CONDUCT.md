@@ -63,7 +63,8 @@ avoid conflicts and minimize harm.
 
 When an incident does occur, it is important to report it promptly. To report a possible violation, email
 [panel-easy-conduct@costafirmo.com](mailto:panel-easy-conduct@costafirmo.com). On Discord, you can also send a direct
-message to a server moderator. Reports are read by the project maintainer, [@edwardtfn](https://github.com/edwardtfn).
+message to the server moderator, `edwardtfn`. Reports are read by the project maintainer,
+[@edwardtfn](https://github.com/edwardtfn).
 
 Community Moderators take reports of violations seriously and will make every effort to respond in a timely manner. They
 will investigate all reports of code of conduct violations, reviewing messages, logs, and recordings, or interviewing
