@@ -46,6 +46,16 @@ substitutions:
 | `wifi_icon_colors` | `true` | Colours the Wi-Fi icon by signal strength while everything is connected (green, yellow or orange), and red otherwise. When `false`, the icon stays grey, or red until the Blueprint is ready. |
 <!-- markdownlint-enable MD013 -->
 
+## Hardware buttons
+
+<!-- markdownlint-disable MD013 -->
+| Substitution | Default | Description |
+| :- | :- | :- |
+| `buttons_bar_text_follow_color` | `false` | Draws each hardware button label in the colour of its bar, which follows the button state, instead of the label colour set in the Blueprint. |
+<!-- markdownlint-enable MD013 -->
+
+The bar colours themselves are set in the Blueprint, not through substitutions.
+
 ## Pages
 
 <!-- markdownlint-disable MD013 -->
