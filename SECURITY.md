@@ -21,6 +21,8 @@ Please include:
 This is a volunteer-maintained project, so responses are handled on a best-effort basis.
 Once a fix is released, a security advisory is published, crediting the reporter if they wish.
 
+Vulnerability reports are handled without AI assistance and are never shared with AI tools.
+
 ## Scope
 
 In scope:
