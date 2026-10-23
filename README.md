@@ -74,8 +74,7 @@ NSPanel Easy comprises three tightly integrated components that work together:
 | **HA Blueprint** | A Home Assistant automation blueprint that orchestrates the panel's behavior and entity bindings. |
 
 > [!NOTE]
-> Each component is versioned independently and designed to be compatible across releases.
-> You do not need to update all three at once - update each at your own pace as new versions become available.
+> To update a running panel, see [Update NSPanel Easy](docs/howto.md#update-nspanel-easy).
 
 ## Documentation & Resources
 
@@ -87,6 +86,8 @@ Quick links for the most common needs:
 
 - **Getting Started:** [Installation and Setup](docs/install.md) walks you
   through flashing, TFT upload, and Blueprint import.
+- **Updating:** [Update NSPanel Easy](docs/howto.md#update-nspanel-easy)
+  covers the three steps to update a running panel.
 - **Migrating from Blackymas?** The [Migration Guide](docs/migration_from_blackymas.md)
   takes less than 10 minutes — no serial flashing required.
 - **API Reference:** [API Documentation](docs/api.md) for all custom ESPHome
