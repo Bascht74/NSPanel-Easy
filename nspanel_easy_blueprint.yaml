@@ -431,9 +431,7 @@ blueprint:
             Fixed lower bound of the graph. Leave empty for an automatic bound, from the lowest value of the last 24 hours.
           default: ""
           selector: &selector_home_value_graph_bound
-            number:
-              mode: box
-              step: any
+            text: {}
         home_value01_graph_max:
           name: Home page - Entity State 01 - Graph maximum
           description: &description_home_value_graph_max >-
@@ -12670,9 +12668,13 @@ actions:
                                   if unit_of_measurement_raw and unit_of_measurement_raw is string and unit_of_measurement_raw | length > 0
                                   else ""
                                 }}
-                              # Fixed bounds; an empty side means automatic
-                              graph_min: '{{ graph_value.graph_min if is_number(graph_value.graph_min | default("")) else "" }}'
-                              graph_max: '{{ graph_value.graph_max if is_number(graph_value.graph_max | default("")) else "" }}'
+                              # Fixed bounds; a comma is accepted as decimal separator, and an empty or non-numeric field means automatic
+                              graph_min: >-
+                                {%- set bound = (graph_value.graph_min | default("") | string | trim).replace(",", ".") -%}
+                                {{ bound if is_number(bound) else "" }}
+                              graph_max: >-
+                                {%- set bound = (graph_value.graph_max | default("") | string | trim).replace(",", ".") -%}
+                                {{ bound if is_number(bound) else "" }}
                               # Same decimals as the value shown on the Home page
                               graph_decimals: >-
                                 {%- set rounded = states(entity_id, rounded=true) | string -%}

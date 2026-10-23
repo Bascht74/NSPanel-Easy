@@ -99,7 +99,7 @@ The graph is drawn from the 5-minute means that Home Assistant keeps in the reco
 
 ### Home page - Entity State 01-04 - Graph minimum and maximum (Optional)
 
-Fixed lower and upper bounds of the graph (e.g. `0` and `3000`).
+Fixed lower and upper bounds of the graph, as numbers (e.g. `0` and `3000`). A comma is also accepted as decimal separator (e.g. `0,5`).
 Leave a field empty for an automatic bound, from the lowest or highest value of the last 24 hours. For example, set only the minimum to `0` for a power sensor.
 
 ## Alarm Control Panel
