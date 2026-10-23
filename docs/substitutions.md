@@ -46,6 +46,14 @@ substitutions:
 | `wifi_icon_colors` | `true` | Colours the Wi-Fi icon by signal strength while everything is connected (green, yellow or orange), and red otherwise. When `false`, the icon stays grey, or red until the Blueprint is ready. |
 <!-- markdownlint-enable MD013 -->
 
+## Home Assistant connection
+
+<!-- markdownlint-disable MD013 -->
+| Substitution | Default | Description |
+| :- | :- | :- |
+| `api_stale_grace_period` | `30s` | Time without Home Assistant before the values on display are indicated as stale. Chips, home custom buttons and the weather picture are then hidden, the indoor temperature falls back to the panel's own sensor, and the outdoor temperature and the home values are greyed out. Everything recovers as soon as Home Assistant is back. |
+<!-- markdownlint-enable MD013 -->
+
 ## Hardware buttons
 
 <!-- markdownlint-disable MD013 -->
