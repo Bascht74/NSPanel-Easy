@@ -96,9 +96,9 @@ Contributions of all kinds are welcome — code, documentation, translations, an
 testing. See [CONTRIBUTING.md](https://github.com/edwardtfn/NSPanel-Easy/blob/main/CONTRIBUTING.md)
 for guidelines, branching conventions, and how to run the local linters.
 All community spaces follow the
-[Code of Conduct](https://github.com/edwardtfn/NSPanel-Easy/blob/main/CODE_OF_CONDUCT.md), and security
+[Code of Conduct](https://github.com/edwardtfn/NSPanel-Easy?tab=coc-ov-file), and security
 vulnerabilities must be reported privately, as described in the
-[Security Policy](https://github.com/edwardtfn/NSPanel-Easy/blob/main/SECURITY.md).
+[Security Policy](https://github.com/edwardtfn/NSPanel-Easy/security/policy).
 
 Not a developer? You can still help by improving the docs, translating
 strings, testing open [pull requests](https://github.com/edwardtfn/NSPanel-Easy/pulls),
