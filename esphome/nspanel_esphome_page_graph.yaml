@@ -11,7 +11,6 @@ substitutions:
   graph_refresh_interval: 5min      # Must match GRAPH_SLOT_SECONDS
   graph_draw_queue_timeout: 200ms   # Longest wait for the display queue between two batches
   graph_draw_batch_delay: 20ms      # Pause between two batches, so other commands are not starved
-  graph_axis_font: 1                # Nextion font of the hour labels (the small font of the hardware button labels)
   TAG_PAGE_GRAPH: nspanel.page.graph
 
 display:
@@ -189,36 +188,20 @@ script:
     mode: restart
     then:
       # Lines at the top and bottom of the graph (the max and min labels) and a tick with the hour every
-      # GRAPH_TICK_HOURS on the time axis. The colours and the background come from the theme variables of the TFT.
+      # GRAPH_TICK_HOURS on the time axis. The TFT draws them relative to the waveform, with the theme colours.
       - lambda: |-
           if (current_page_id != get_page_id("graph")) return;
-          const GraphGeometry geometry = display_portrait ? GRAPH_GEOMETRY_PORTRAIT : GRAPH_GEOMETRY_LANDSCAPE;
-          const uint16_t left = geometry.x;
-          const uint16_t right = geometry.x + GRAPH_POINTS - 1;
-          const uint16_t top = geometry.y - 1;
-          const uint16_t bottom = geometry.y + GRAPH_HEIGHT;
-          // Restore the background below the graph, so the ticks of the previous drawing disappear
-          disp1->send_command_printf("picq %" PRIu16 ",%" PRIu16 ",%u,%u,pic_background_main", left - 12, bottom,
-                                     static_cast<unsigned>(GRAPH_POINTS + 24),
-                                     static_cast<unsigned>(GRAPH_TICK_LENGTH + GRAPH_AXIS_LABEL_HEIGHT + 3));
-          // On the portrait layout the min label is below the graph, inside the restored area
-          disp1->send_command_printf("ref %s", hmi::graph::VALUE_MIN.name);
-          disp1->send_command_printf("line %" PRIu16 ",%" PRIu16 ",%" PRIu16 ",%" PRIu16 ",color_pco_navigation",
-                                     left, top, right, top);
-          disp1->send_command_printf("line %" PRIu16 ",%" PRIu16 ",%" PRIu16 ",%" PRIu16 ",color_pco_navigation",
-                                     left, bottom, right, bottom);
+          // Restore the background below the graph, so the ticks of the previous drawing disappear, and draw the bound lines
+          disp1->send_command_printf("click %s,1", hmi::graph::DRAW_FRAME.name);
           const size_t count = graph_values.size();
           if (count == 0 or graph_last_slot == 0) return;
           for (size_t idx = 0; idx < count; ++idx) {
             const time_t slot = static_cast<time_t>(graph_last_slot) - static_cast<time_t>((count - 1 - idx) * GRAPH_SLOT_SECONDS);
             const ESPTime local = ESPTime::from_epoch_local(slot);
             if (local.minute != 0 or local.hour % GRAPH_TICK_HOURS != 0) continue;
-            const uint16_t x = left + idx;
-            disp1->send_command_printf("line %" PRIu16 ",%" PRIu16 ",%" PRIu16 ",%u,color_pco_navigation",
-                                       x, bottom, x, static_cast<unsigned>(bottom + GRAPH_TICK_LENGTH));
-            disp1->send_command_printf("xstr %u,%u,24,%u,${graph_axis_font},color_pco_navigation,0,1,1,3,\"%02u\"",
-                                       static_cast<unsigned>(x - 12), static_cast<unsigned>(bottom + GRAPH_TICK_LENGTH + 1),
-                                       static_cast<unsigned>(GRAPH_AXIS_LABEL_HEIGHT), static_cast<unsigned>(local.hour));
+            disp1->send_command_printf("%s.val=%u", hmi::graph::TICK_X.name, static_cast<unsigned>(idx));
+            disp1->send_command_printf("%s.txt=\"%02u\"", hmi::graph::TICK_TEXT.name, static_cast<unsigned>(local.hour));
+            disp1->send_command_printf("click %s,1", hmi::graph::DRAW_TICK.name);
           }  // for (idx)
 
   - id: page_graph_refresh

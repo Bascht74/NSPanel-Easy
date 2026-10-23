@@ -97,10 +97,10 @@ The graph is drawn from the 5-minute means that Home Assistant keeps in the reco
 - Periods without data repeat the previous value, and periods before the first value are drawn at the bottom of the graph.
 - Home Assistant must be connected: the graph takes a second or two to appear when the page opens.
 
-### Home page - Entity State 01-04 - Graph scale (Optional)
+### Home page - Entity State 01-04 - Graph minimum and maximum (Optional)
 
-Fixed lower and upper bounds of the graph, as `min,max` (e.g. `0,3000`).
-Leave it empty for an automatic scale, from the lowest to the highest value of the last 24 hours, or leave one side empty to fix only the other one (e.g. `0,` for a power sensor).
+Fixed lower and upper bounds of the graph (e.g. `0` and `3000`).
+Leave a field empty for an automatic bound, from the lowest or highest value of the last 24 hours. For example, set only the minimum to `0` for a power sensor.
 
 ## Alarm Control Panel
 

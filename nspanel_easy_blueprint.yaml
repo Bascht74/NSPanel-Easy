@@ -425,14 +425,21 @@ blueprint:
           default: false
           selector: &selector_home_value_graph
             boolean: {}
-        home_value01_graph_scale:
-          name: Home page - Entity State 01 - Graph scale
-          description: &description_home_value_graph_scale >-
-            Fixed lower and upper bounds of the graph, as `min,max` (e.g. `0,3000`).
-            Leave empty for an automatic scale, or leave one side empty to fix only the other one (e.g. `0,`).
+        home_value01_graph_min:
+          name: Home page - Entity State 01 - Graph minimum
+          description: &description_home_value_graph_min >-
+            Fixed lower bound of the graph. Leave empty for an automatic bound, from the lowest value of the last 24 hours.
           default: ""
-          selector: &selector_home_value_graph_scale
-            text: {}
+          selector: &selector_home_value_graph_bound
+            number:
+              mode: box
+              step: any
+        home_value01_graph_max:
+          name: Home page - Entity State 01 - Graph maximum
+          description: &description_home_value_graph_max >-
+            Fixed upper bound of the graph. Leave empty for an automatic bound, from the highest value of the last 24 hours.
+          default: ""
+          selector: *selector_home_value_graph_bound
         home_value02:
           name: Home page - Entity State 02 - Entity
           description: *description_entity_displayed
@@ -458,11 +465,16 @@ blueprint:
           description: *description_home_value_graph
           default: false
           selector: *selector_home_value_graph
-        home_value02_graph_scale:
-          name: Home page - Entity State 02 - Graph scale
-          description: *description_home_value_graph_scale
+        home_value02_graph_min:
+          name: Home page - Entity State 02 - Graph minimum
+          description: *description_home_value_graph_min
           default: ""
-          selector: *selector_home_value_graph_scale
+          selector: *selector_home_value_graph_bound
+        home_value02_graph_max:
+          name: Home page - Entity State 02 - Graph maximum
+          description: *description_home_value_graph_max
+          default: ""
+          selector: *selector_home_value_graph_bound
         home_value03:
           name: Home page - Entity State 03 - Entity
           description: *description_entity_displayed
@@ -488,11 +500,16 @@ blueprint:
           description: *description_home_value_graph
           default: false
           selector: *selector_home_value_graph
-        home_value03_graph_scale:
-          name: Home page - Entity State 03 - Graph scale
-          description: *description_home_value_graph_scale
+        home_value03_graph_min:
+          name: Home page - Entity State 03 - Graph minimum
+          description: *description_home_value_graph_min
           default: ""
-          selector: *selector_home_value_graph_scale
+          selector: *selector_home_value_graph_bound
+        home_value03_graph_max:
+          name: Home page - Entity State 03 - Graph maximum
+          description: *description_home_value_graph_max
+          default: ""
+          selector: *selector_home_value_graph_bound
         home_value04:
           name: Home page - Entity State 04 - Entity
           description: *description_entity_displayed
@@ -518,11 +535,16 @@ blueprint:
           description: *description_home_value_graph
           default: false
           selector: *selector_home_value_graph
-        home_value04_graph_scale:
-          name: Home page - Entity State 04 - Graph scale
-          description: *description_home_value_graph_scale
+        home_value04_graph_min:
+          name: Home page - Entity State 04 - Graph minimum
+          description: *description_home_value_graph_min
           default: ""
-          selector: *selector_home_value_graph_scale
+          selector: *selector_home_value_graph_bound
+        home_value04_graph_max:
+          name: Home page - Entity State 04 - Graph maximum
+          description: *description_home_value_graph_max
+          default: ""
+          selector: *selector_home_value_graph_bound
     home_page_custom_buttons:
       name: Home page - Custom buttons
       icon: mdi:home
@@ -5185,7 +5207,7 @@ variables:
   # action or a new field in an existing one. The versioning workflow replaces 'next' by the version
   # being released. Releases that keep the contract leave it unchanged, so older firmware keeps working.
   # While it is 'next' (development builds), the minimum firmware check is skipped.
-  min_esphome_version: 2026.10.7
+  min_esphome_version: next
 
   # API version [MAJOR, MINOR] this Blueprint uses, matching api_version in
   # esphome/nspanel_esphome_version.yaml. Raise MINOR when the Blueprint starts calling a new API action,
@@ -6524,7 +6546,8 @@ actions:
             icon_color_rgb: !input home_value01_icon_color
             label_color_rgb: !input home_value01_label_color
             graph: !input home_value01_graph
-            graph_scale: !input home_value01_graph_scale
+            graph_min: !input home_value01_graph_min
+            graph_max: !input home_value01_graph_max
             page: home
             component: value01
           - entity: !input home_value02
@@ -6532,7 +6555,8 @@ actions:
             icon_color_rgb: !input home_value02_icon_color
             label_color_rgb: !input home_value02_label_color
             graph: !input home_value02_graph
-            graph_scale: !input home_value02_graph_scale
+            graph_min: !input home_value02_graph_min
+            graph_max: !input home_value02_graph_max
             page: home
             component: value02
           - entity: !input home_value03
@@ -6540,7 +6564,8 @@ actions:
             icon_color_rgb: !input home_value03_icon_color
             label_color_rgb: !input home_value03_label_color
             graph: !input home_value03_graph
-            graph_scale: !input home_value03_graph_scale
+            graph_min: !input home_value03_graph_min
+            graph_max: !input home_value03_graph_max
             page: home
             component: value03
           - entity: !input home_value04
@@ -6548,7 +6573,8 @@ actions:
             icon_color_rgb: !input home_value04_icon_color
             label_color_rgb: !input home_value04_label_color
             graph: !input home_value04_graph
-            graph_scale: !input home_value04_graph_scale
+            graph_min: !input home_value04_graph_min
+            graph_max: !input home_value04_graph_max
             page: home
             component: value04
 
@@ -12645,10 +12671,9 @@ actions:
                                   if unit_of_measurement_raw and unit_of_measurement_raw is string and unit_of_measurement_raw | length > 0
                                   else ""
                                 }}
-                              # Fixed bounds as "min,max"; an empty or non-numeric side means automatic
-                              graph_scale: '{{ (graph_value.graph_scale | default("", true) | string).split(",") }}'
-                              graph_min: '{{ graph_scale[0] | trim if graph_scale | count == 2 and is_number(graph_scale[0] | trim) else "" }}'
-                              graph_max: '{{ graph_scale[1] | trim if graph_scale | count == 2 and is_number(graph_scale[1] | trim) else "" }}'
+                              # Fixed bounds; an empty side means automatic
+                              graph_min: '{{ graph_value.graph_min if is_number(graph_value.graph_min | default("")) else "" }}'
+                              graph_max: '{{ graph_value.graph_max if is_number(graph_value.graph_max | default("")) else "" }}'
                               # Same decimals as the value shown on the Home page
                               graph_decimals: >-
                                 {%- set rounded = states(entity_id, rounded=true) | string -%}
