@@ -96,6 +96,11 @@ size_t graph_append(const std::vector<std::string> &txt_list) {
     const uint32_t slot = start + (idx - 1) * GRAPH_SLOT_SECONDS;
     if (graph_last_slot != 0 && slot <= graph_last_slot)
       continue;  // Already shown
+    if (graph_last_slot != 0 && slot - graph_last_slot > GRAPH_POINTS * GRAPH_SLOT_SECONDS) {
+      // Gap longer than the graph: nothing shown is kept, so start over instead of filling it
+      graph_values.clear();
+      graph_last_slot = 0;
+    }  // if (gap longer than the graph)
     // Fill slots missed between the newest point shown and this one
     if (graph_last_slot != 0) {
       for (uint32_t missed = graph_last_slot + GRAPH_SLOT_SECONDS; missed < slot; missed += GRAPH_SLOT_SECONDS) {
@@ -137,10 +142,18 @@ void graph_range(float &low, float &high) {
     high = low + 1.0f;
   }  // if (bounds missing)
   if (high <= low) {
-    // Flat line: widen around it, so it is drawn in the middle
+    // Flat line: widen the automatic bounds only, so a configured bound is always honoured
     const float margin = (std::fabs(low) > 1.0f) ? std::fabs(low) * 0.1f : 1.0f;
-    low -= margin;
-    high += margin;
+    const bool fixed_low = graph_config.min.has_value();
+    const bool fixed_high = graph_config.max.has_value();
+    if (fixed_low && !fixed_high) {
+      high = low + margin;
+    } else if (fixed_high && !fixed_low) {
+      low = high - margin;
+    } else {  // Both automatic (flat data), or both configured the wrong way round
+      low -= margin;
+      high += margin;
+    }  // if (fixed bounds)
   }  // if (flat range)
 }
 

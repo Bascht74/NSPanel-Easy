@@ -12625,6 +12625,18 @@ actions:
                                   }}
                           - *variable_entity
                           - condition: '{{ entity_id_valid }}'
+                          - &condition_graph_enabled
+                            alias: Only an entity with the graph enabled on a Home page value
+                            condition: template
+                            value_template: >-
+                              {{
+                                home_page.entity_value
+                                | selectattr("entity", "defined")
+                                | selectattr("entity", "eq", entity_id)
+                                | selectattr("graph", "defined")
+                                | selectattr("graph", "eq", true)
+                                | list | count > 0
+                              }}
                           - variables:
                               unit_of_measurement_raw: '{{ state_attr(entity_id, "unit_of_measurement") | default("") }}'
                               unit_of_measurement: >
@@ -12701,7 +12713,7 @@ actions:
                                     {%- set ns.row = ns.row + 1 -%}
                                   {%- endif -%}
                                   {%- if ns.row < rows | count and as_timestamp(rows[ns.row].start) | int == slot_ts -%}
-                                    {%- set ns.out = ns.out + ["%.3f" | format(rows[ns.row].mean)] -%}
+                                    {%- set ns.out = ns.out + ["%.6g" | format(rows[ns.row].mean)] -%}
                                     {%- set ns.row = ns.row + 1 -%}
                                   {%- else -%}
                                     {%- set ns.out = ns.out + [""] -%}
@@ -13777,6 +13789,9 @@ actions:
                               # Start of the newest period the panel already shows
                               graph_since: '{{ nspanel_event.value | int(0) }}'
                           - condition: '{{ entity_id_valid }}'
+                          # The entity the panel shows, with the graph enabled
+                          - condition: '{{ states(detailed_entity) == entity_id }}'
+                          - *condition_graph_enabled
                           - variables: *variables_graph_period
                           - condition: '{{ graph_end_ts > graph_start_ts }}'
                           - *graph_get_statistics

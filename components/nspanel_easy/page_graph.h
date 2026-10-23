@@ -84,7 +84,7 @@ bool graph_set_history(const std::vector<std::string> &txt_list);
  * @brief Append the newest values sent by the Blueprint, filling missed slots with NAN.
  *
  * Values older than the newest slot already shown are ignored, so a late or repeated
- * answer cannot duplicate points.
+ * answer cannot duplicate points. A gap longer than the graph starts the graph over.
  *
  * @param txt_list `[start, v0, v1, ...]`, same format as graph_set_history().
  * @return Number of slots appended (0 when nothing new or the list was invalid).
@@ -94,7 +94,8 @@ size_t graph_append(const std::vector<std::string> &txt_list);
 /**
  * @brief Compute the scale of the graph: the configured bounds, or the range of the values.
  *
- * A flat or empty range is widened, so the line is drawn in the middle instead of at the bottom.
+ * A flat or empty range is widened on its automatic side(s), so the line is not drawn on the bottom edge
+ * and a configured bound is always kept.
  *
  * @param[out] low Lower bound of the scale.
  * @param[out] high Upper bound of the scale.
