@@ -7287,10 +7287,9 @@ actions:
 
             **How to Resolve This Issue**
 
-            There is no need to update the Blueprint for now. To fix this, update the firmware on your panel:
+            To fix this, update the firmware on your panel:
 
-            1. In ESPHome Device Builder, find your panel, select **Clean Build Files** in its 3-dot menu,
-            then **Install** and **Wirelessly**.
+            1. Open the ESPHome dashboard, find your panel and click **Install**.
 
             2. After the panel restarts, wait about one minute: the display is updated automatically.
 
