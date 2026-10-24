@@ -42,13 +42,19 @@ script:
           static_assert(${page_entities_value_font_medium_max_len} >= ${page_entities_value_font_large_max_len} and
                             ${page_entities_value_font_medium_max_len} <= 255,
                         "page_entities_value_font_medium_max_len must be between page_entities_value_font_large_max_len and 255");
+          static constexpr uint8_t VALUE_FONT_ID_SMALL = 0;   // Smallest font, for long values
+          static constexpr uint8_t VALUE_FONT_ID_MEDIUM = 1;  // Medium font
+          static constexpr uint8_t VALUE_FONT_ID_LARGE = 3;   // Default font of the value components in the TFT
           const uint8_t adjusted_length = adjusted_text_length(txt, "${half_width_chars}");
           // Decide which font to use based on adjusted length
+          // The large font is set explicitly, so a short value restores it after a long one on the same component
           if (adjusted_length > ${page_entities_value_font_medium_max_len}) {
-            disp1->set_component_font(component.c_str(), 0);
+            disp1->set_component_font(component.c_str(), VALUE_FONT_ID_SMALL);
           } else if (adjusted_length > ${page_entities_value_font_large_max_len}) {
-            disp1->set_component_font(component.c_str(), 1);
-          }  // else: keep the default font
+            disp1->set_component_font(component.c_str(), VALUE_FONT_ID_MEDIUM);
+          } else {  // adjusted_length <= ${page_entities_value_font_large_max_len}
+            disp1->set_component_font(component.c_str(), VALUE_FONT_ID_LARGE);
+          }  // adjusted_length
 
   - id: !extend action_component_val
     then:
