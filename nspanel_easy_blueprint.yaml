@@ -9402,6 +9402,7 @@ actions:
                                               (state_entity_state in enum.states.on and entity_domain not in ["automation"])
                                               or (entity_domain == "climate" and state_entity_state != "off")
                                               or (entity_domain in ["automation", "button", "input_button", "remote", "scene", "script"]
+                                                  and "unavailable" not in [entity_state, state_entity_state]
                                                   and not page_constructor
                                                   and trigger.entity_id in [repeat.item.entity, state_entity_id])
                                             }}
@@ -13654,7 +13655,7 @@ actions:
         conditions:
           - condition: trigger
             id: trigger_buttonpage_state
-          - '{{ trigger.to_state.state not in enum.states.unknown }}'
+          - '{{ trigger.to_state.state not in enum.states.unknown or "unavailable" in [trigger.from_state.state, trigger.to_state.state] }}'
           - condition: or
             conditions:
               - '{{ pages.current in pages.buttonpages }}'
