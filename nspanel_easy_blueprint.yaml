@@ -9399,11 +9399,12 @@ actions:
                                             {{ state_entity_state == state_value }}
                                           {% else %}
                                             {{
-                                              (state_entity_state in enum.states.on and entity_domain not in ["automation"])
+                                              (state_entity_state in enum.states.on and (entity_domain not in ["automation"] or state_entity_id != entity_id))
                                               or (entity_domain == "climate" and state_entity_state != "off")
                                               or (entity_domain in ["automation", "button", "input_button", "remote", "scene", "script"]
                                                   and not page_constructor
-                                                  and trigger.entity_id in [repeat.item.entity, state_entity_id])
+                                                  and trigger.entity_id in [repeat.item.entity, state_entity_id]
+                                                  and state_entity_id == entity_id)
                                             }}
                                           {% endif %}
                                         temperature_units: !input temperature_unit
