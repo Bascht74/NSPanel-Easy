@@ -5109,23 +5109,6 @@ trigger_variables:
       group05: !input utilities_page01_group05_line_reference
       group06: !input utilities_page01_group06_line_reference
 
-  sun_state_list: >
-    {{
-      (
-        states.sun
-        | map(attribute="state")
-        | list
-      )
-      if states.sun | length > 0
-      else []
-    }}
-  sun_is_up: >
-    {{
-      sun_state_list | first == "above_horizon"
-      if sun_state_list | length > 0
-      else true
-    }}
-
 variables:
   # Blueprint version will be following release version defined automatically when merging to main
   # There's no need to change it here
@@ -6295,6 +6278,25 @@ actions:
       # Set per iteration by "Entity details pages refresh".
       refresh_settled: false
 
+      # Not in trigger_variables: they are limited templates there and cannot read states.
+      sun_state_list: >
+        {{
+          (
+            states.sun
+            | map(attribute="state")
+            | list
+          )
+          if states.sun | length > 0
+          else []
+        }}
+      # Only below_horizon means night, so an unavailable or unknown sun keeps the day pictures.
+      sun_is_up: >
+        {{
+          sun_state_list | first != "below_horizon"
+          if sun_state_list | length > 0
+          else true
+        }}
+
       compact_unit_display: !input compact_unit_display
       # Home Assistant strips whitespace from rendered templates, so a variable holding only a space would always be empty.
       # The separator is built inline with ("" if compact_unit_display else " ") wherever a value and its unit are joined.
@@ -6431,11 +6433,17 @@ actions:
             partlycloudy: '{{ 11 if sun_is_up else 12}}'
             lightning_rainy: '{{ 13 if sun_is_up else 14}}'
             lightning-rainy: '{{ 13 if sun_is_up else 14}}'
-            execptional: '{{ 13 if sun_is_up else 14}}'
+            exceptional: '{{ 13 if sun_is_up else 14}}'
             clear_night: 15
             clear-night: 15
             unknown: 1
             unavailable: 1
+          weather_day:  # forecast days show these day pictures also after sunset
+            sunny: 2
+            partlycloudy: 11
+            lightning_rainy: 13
+            lightning-rainy: 13
+            exceptional: 13
 
       ##### Home page #####
       home_page:
@@ -11916,7 +11924,11 @@ actions:
                                                 else "unavailable"
                                               ] | int(1)
                                               if condition == "unknown" and page_name == pages.weatherpages[0]
-                                              else nextion.pic.weather[condition] | int(1)
+                                              else (
+                                                nextion.pic.weather_day[condition]
+                                                if page_name != pages.weatherpages[0] and condition in nextion.pic.weather_day
+                                                else nextion.pic.weather[condition]
+                                              ) | int(1)
                                             }}
                                         continue_on_error: true
                                       - *delay_default
