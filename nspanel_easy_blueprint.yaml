@@ -13110,16 +13110,39 @@ actions:
                                       - delay:
                                           milliseconds: 300
                                       - *variables_page_buttons
+                                      # Only the buttons the click can change are redrawn: the clicked button and the
+                                      # buttons sharing its entity or State Indicator Entity, e.g. scene buttons tracked
+                                      # by one input_select. Other entities changed by a custom action are redrawn by
+                                      # their state triggers. Available momentary entities without a State Indicator Entity
+                                      # are left out, as their state trigger shows them on for 800 ms and then off.
                                       - repeat:
                                           for_each: >
-                                            {{
-                                              buttons_pages.buttons
-                                              | selectattr("page", "defined")
-                                              | selectattr("page", "eq", nspanel_event.page)
-                                              | selectattr("entity", "defined")
-                                              | rejectattr("entity", "eq", [])
-                                              | list
-                                            }}
+                                            {%- set ns = namespace(items=[], click_entities=[last_click_button.entity]) -%}
+                                            {%- if last_click_button.state_entity is defined
+                                                  and last_click_button.state_entity is string
+                                                  and last_click_button.state_entity | length > 3
+                                                  and "." in last_click_button.state_entity -%}
+                                              {%- set ns.click_entities = ns.click_entities + [last_click_button.state_entity] -%}
+                                            {%- endif -%}
+                                            {%- for item in buttons_pages.buttons
+                                                  | selectattr("page", "defined")
+                                                  | selectattr("page", "eq", nspanel_event.page)
+                                                  | selectattr("entity", "defined")
+                                                  | rejectattr("entity", "eq", []) -%}
+                                              {%- set item_state_entity = item.state_entity
+                                                    if item.state_entity is defined
+                                                        and item.state_entity is string
+                                                        and item.state_entity | length > 3
+                                                        and "." in item.state_entity
+                                                    else item.entity -%}
+                                              {%- if (item.entity in ns.click_entities or item_state_entity in ns.click_entities)
+                                                    and not (item_state_entity == item.entity
+                                                      and item.entity.split(".")[0] in ["automation", "button", "input_button", "remote", "scene", "script"]
+                                                      and states(item.entity) not in ["unavailable"]) -%}
+                                                {%- set ns.items = ns.items + [item] -%}
+                                              {%- endif -%}
+                                            {%- endfor -%}
+                                            {{ ns.items }}
                                           sequence: *display_button_page_button
 
                       - alias: Climate page
