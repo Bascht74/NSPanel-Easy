@@ -8,7 +8,7 @@
 
 ---
 substitutions:
-  half_width_chars: "iljtIf '-,;:!.\\\"|()[]{}*^~\\\\/_"
+  half_width_chars: "iljtIf '-,;:!.°\\\"|()[]{}*^~\\\\/_"
   TAG_PAGE_ENTITIES: nspanel.page.entities
 
 esphome:
