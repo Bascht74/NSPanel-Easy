@@ -10765,7 +10765,13 @@ actions:
                                     {%- if page_constructor -%}
                                       true
                                     {%- else -%}
-                                      {%- set old_state = trigger.event.data.old_state -%}
+                                      {#- Only state_changed events carry old_state; the details refresh loop runs from the panel event #}
+                                      {%- set old_state = (
+                                        trigger.event.data.old_state
+                                        if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.old_state is defined
+                                        else none
+                                      ) -%}
+                                      {#- No previous state to compare against: push the options again #}
                                       {%- if old_state is none -%}
                                         true
                                       {%- else -%}
