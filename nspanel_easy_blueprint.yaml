@@ -6433,7 +6433,7 @@ actions:
             partlycloudy: '{{ 11 if sun_is_up else 12}}'
             lightning_rainy: '{{ 13 if sun_is_up else 14}}'
             lightning-rainy: '{{ 13 if sun_is_up else 14}}'
-            execptional: '{{ 13 if sun_is_up else 14}}'
+            exceptional: '{{ 13 if sun_is_up else 14}}'
             clear_night: 15
             clear-night: 15
             unknown: 1
