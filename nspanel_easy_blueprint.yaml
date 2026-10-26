@@ -13365,6 +13365,11 @@ actions:
                                       # by one input_select. Other entities changed by a custom action are redrawn by
                                       # their state triggers. Available momentary entities without a State Indicator Entity
                                       # are left out, as their state trigger shows them on for 800 ms and then off.
+                                      # Buttons a state trigger has drawn since the click are skipped: the newest update of their
+                                      # entity or State Indicator Entity came after the click, with a state that trigger draws.
+                                      # Nothing is skipped while other runs of this automation were running at the click or are running
+                                      # now, as a state trigger run may have been dropped at the maximum number of runs, or while
+                                      # state triggers are blocked (no device name).
                                       - repeat:
                                           for_each: >
                                             {%- set ns = namespace(items=[], click_entities=[last_click_button.entity]) -%}
@@ -13374,6 +13379,9 @@ actions:
                                                   and "." in last_click_button.state_entity -%}
                                               {%- set ns.click_entities = ns.click_entities + [last_click_button.state_entity] -%}
                                             {%- endif -%}
+                                            {%- set skip_drawn = has_value(device_name_sensor)
+                                                  and this.attributes.current | int(1) == 0
+                                                  and state_attr(this.entity_id, "current") == 1 -%}
                                             {%- for item in buttons_pages.buttons
                                                   | selectattr("page", "defined")
                                                   | selectattr("page", "eq", nspanel_event.page)
@@ -13389,7 +13397,17 @@ actions:
                                                     and not (item_state_entity == item.entity
                                                       and item.entity.split(".")[0] in ["automation", "button", "input_button", "remote", "scene", "script"]
                                                       and states(item.entity) not in ["unavailable"]) -%}
-                                                {%- set ns.items = ns.items + [item] -%}
+                                                {%- set newest = [
+                                                        states[item.entity] if "." in item.entity else none,
+                                                        states[item_state_entity] if "." in item_state_entity else none
+                                                      ]
+                                                      | reject("none") | sort(attribute="last_updated") | last | default(none) -%}
+                                                {%- if not (skip_drawn
+                                                      and newest is not none
+                                                      and newest.last_updated > trigger.event.time_fired
+                                                      and (newest.state not in enum.states.unknown or newest.state == "unavailable")) -%}
+                                                  {%- set ns.items = ns.items + [item] -%}
+                                                {%- endif -%}
                                               {%- endif -%}
                                             {%- endfor -%}
                                             {{ ns.items }}
