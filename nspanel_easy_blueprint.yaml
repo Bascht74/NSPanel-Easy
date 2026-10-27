@@ -10961,6 +10961,35 @@ actions:
                                     continue_on_error: true
                                   - *delay_default
 
+                                  ##### Always: show the active preset on the preset button #####
+                                  # Standard presets get the icon Home Assistant uses for them; no preset or a
+                                  # custom one keeps the generic icon. The font color marks whether a preset is
+                                  # active, using the display theme colors. This also clears the press color.
+                                  - action: 'esphome.{{ action_prefix }}_component_text_list'
+                                    data:
+                                      page: mem
+                                      id: command
+                                      txt_list: >-
+                                        {%- set preset_icons = {
+                                          "home": "home",
+                                          "away": "account-arrow-right",
+                                          "boost": "rocket-launch",
+                                          "comfort": "sofa",
+                                          "eco": "leaf",
+                                          "sleep": "bed",
+                                          "activity": "motion-sensor"
+                                        } -%}
+                                        {%- set preset = current_preset_mode | lower -%}
+                                        {%- set preset_active = preset | length > 0 and preset != "none" -%}
+                                        {{
+                                          [
+                                            'preset_button.txt="' ~ all_icons[preset_icons.get(preset, "tune-variant")] ~ '"',
+                                            "preset_button.pco=" ~ ("color_pco_main" if preset_active else "color_pco_secondary")
+                                          ]
+                                        }}
+                                    continue_on_error: true
+                                  - *delay_default
+
                           - &climate_custom_buttons
                             alias: Climate custom buttons
                             sequence:
