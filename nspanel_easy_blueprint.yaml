@@ -9399,11 +9399,14 @@ actions:
                                             {{ state_entity_state == state_value }}
                                           {% else %}
                                             {{
-                                              (state_entity_state in enum.states.on and entity_domain not in ["automation"])
+                                              (state_entity_state in enum.states.on and (entity_domain not in ["automation"] or state_entity_id != entity_id))
                                               or (entity_domain == "climate" and state_entity_state != "off")
                                               or (entity_domain in ["automation", "button", "input_button", "remote", "scene", "script"]
+                                                  and "unavailable" not in [entity_state, state_entity_state]
+                                                  and (trigger.from_state is not defined or trigger.from_state is none or trigger.from_state.state not in ["unavailable"])
                                                   and not page_constructor
-                                                  and trigger.entity_id in [repeat.item.entity, state_entity_id])
+                                                  and trigger.entity_id in [repeat.item.entity, state_entity_id]
+                                                  and state_entity_id == entity_id)
                                             }}
                                           {% endif %}
                                         temperature_units: !input temperature_unit
@@ -13108,16 +13111,39 @@ actions:
                                       - delay:
                                           milliseconds: 300
                                       - *variables_page_buttons
+                                      # Only the buttons the click can change are redrawn: the clicked button and the
+                                      # buttons sharing its entity or State Indicator Entity, e.g. scene buttons tracked
+                                      # by one input_select. Other entities changed by a custom action are redrawn by
+                                      # their state triggers. Available momentary entities without a State Indicator Entity
+                                      # are left out, as their state trigger shows them on for 800 ms and then off.
                                       - repeat:
                                           for_each: >
-                                            {{
-                                              buttons_pages.buttons
-                                              | selectattr("page", "defined")
-                                              | selectattr("page", "eq", nspanel_event.page)
-                                              | selectattr("entity", "defined")
-                                              | rejectattr("entity", "eq", [])
-                                              | list
-                                            }}
+                                            {%- set ns = namespace(items=[], click_entities=[last_click_button.entity]) -%}
+                                            {%- if last_click_button.state_entity is defined
+                                                  and last_click_button.state_entity is string
+                                                  and last_click_button.state_entity | length > 3
+                                                  and "." in last_click_button.state_entity -%}
+                                              {%- set ns.click_entities = ns.click_entities + [last_click_button.state_entity] -%}
+                                            {%- endif -%}
+                                            {%- for item in buttons_pages.buttons
+                                                  | selectattr("page", "defined")
+                                                  | selectattr("page", "eq", nspanel_event.page)
+                                                  | selectattr("entity", "defined")
+                                                  | rejectattr("entity", "eq", []) -%}
+                                              {%- set item_state_entity = item.state_entity
+                                                    if item.state_entity is defined
+                                                        and item.state_entity is string
+                                                        and item.state_entity | length > 3
+                                                        and "." in item.state_entity
+                                                    else item.entity -%}
+                                              {%- if (item.entity in ns.click_entities or item_state_entity in ns.click_entities)
+                                                    and not (item_state_entity == item.entity
+                                                      and item.entity.split(".")[0] in ["automation", "button", "input_button", "remote", "scene", "script"]
+                                                      and states(item.entity) not in ["unavailable"]) -%}
+                                                {%- set ns.items = ns.items + [item] -%}
+                                              {%- endif -%}
+                                            {%- endfor -%}
+                                            {{ ns.items }}
                                           sequence: *display_button_page_button
 
                       - alias: Climate page
@@ -13654,7 +13680,7 @@ actions:
         conditions:
           - condition: trigger
             id: trigger_buttonpage_state
-          - '{{ trigger.to_state.state not in enum.states.unknown }}'
+          - '{{ trigger.to_state.state not in enum.states.unknown or "unavailable" in [trigger.from_state.state, trigger.to_state.state] }}'
           - condition: or
             conditions:
               - '{{ pages.current in pages.buttonpages }}'
