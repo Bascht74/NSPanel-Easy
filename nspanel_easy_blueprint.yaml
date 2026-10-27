@@ -5178,23 +5178,6 @@ trigger_variables:
       group05: !input utilities_page01_group05_line_reference
       group06: !input utilities_page01_group06_line_reference
 
-  sun_state_list: >
-    {{
-      (
-        states.sun
-        | map(attribute="state")
-        | list
-      )
-      if states.sun | length > 0
-      else []
-    }}
-  sun_is_up: >
-    {{
-      sun_state_list | first == "above_horizon"
-      if sun_state_list | length > 0
-      else true
-    }}
-
 variables:
   # Blueprint version will be following release version defined automatically when merging to main
   # There's no need to change it here
@@ -6365,6 +6348,25 @@ actions:
       # Set per iteration by "Entity details pages refresh".
       refresh_settled: false
 
+      # Not in trigger_variables: they are limited templates there and cannot read states.
+      sun_state_list: >
+        {{
+          (
+            states.sun
+            | map(attribute="state")
+            | list
+          )
+          if states.sun | length > 0
+          else []
+        }}
+      # Only below_horizon means night, so an unavailable or unknown sun keeps the day pictures.
+      sun_is_up: >
+        {{
+          sun_state_list | first != "below_horizon"
+          if sun_state_list | length > 0
+          else true
+        }}
+
       compact_unit_display: !input compact_unit_display
       # Home Assistant strips whitespace from rendered templates, so a variable holding only a space would always be empty.
       # The separator is built inline with ("" if compact_unit_display else " ") wherever a value and its unit are joined.
@@ -6501,11 +6503,17 @@ actions:
             partlycloudy: '{{ 11 if sun_is_up else 12}}'
             lightning_rainy: '{{ 13 if sun_is_up else 14}}'
             lightning-rainy: '{{ 13 if sun_is_up else 14}}'
-            execptional: '{{ 13 if sun_is_up else 14}}'
+            exceptional: '{{ 13 if sun_is_up else 14}}'
             clear_night: 15
             clear-night: 15
             unknown: 1
             unavailable: 1
+          weather_day:  # forecast days show these day pictures also after sunset
+            sunny: 2
+            partlycloudy: 11
+            lightning_rainy: 13
+            lightning-rainy: 13
+            exceptional: 13
 
       ##### Home page #####
       home_page:
@@ -9494,11 +9502,14 @@ actions:
                                             {{ state_entity_state == state_value }}
                                           {% else %}
                                             {{
-                                              (state_entity_state in enum.states.on and entity_domain not in ["automation"])
+                                              (state_entity_state in enum.states.on and (entity_domain not in ["automation"] or state_entity_id != entity_id))
                                               or (entity_domain == "climate" and state_entity_state != "off")
                                               or (entity_domain in ["automation", "button", "input_button", "remote", "scene", "script"]
+                                                  and "unavailable" not in [entity_state, state_entity_state]
+                                                  and (trigger.from_state is not defined or trigger.from_state is none or trigger.from_state.state not in ["unavailable"])
                                                   and not page_constructor
-                                                  and trigger.entity_id in [repeat.item.entity, state_entity_id])
+                                                  and trigger.entity_id in [repeat.item.entity, state_entity_id]
+                                                  and state_entity_id == entity_id)
                                             }}
                                           {% endif %}
                                         temperature_units: !input temperature_unit
@@ -10868,7 +10879,13 @@ actions:
                                     {%- if page_constructor -%}
                                       true
                                     {%- else -%}
-                                      {%- set old_state = trigger.event.data.old_state -%}
+                                      {#- Only state_changed events carry old_state; the details refresh loop runs from the panel event #}
+                                      {%- set old_state = (
+                                        trigger.event.data.old_state
+                                        if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.old_state is defined
+                                        else none
+                                      ) -%}
+                                      {#- No previous state to compare against: push the options again #}
                                       {%- if old_state is none -%}
                                         true
                                       {%- else -%}
@@ -12013,7 +12030,11 @@ actions:
                                                 else "unavailable"
                                               ] | int(1)
                                               if condition == "unknown" and page_name == pages.weatherpages[0]
-                                              else nextion.pic.weather[condition] | int(1)
+                                              else (
+                                                nextion.pic.weather_day[condition]
+                                                if page_name != pages.weatherpages[0] and condition in nextion.pic.weather_day
+                                                else nextion.pic.weather[condition]
+                                              ) | int(1)
                                             }}
                                         continue_on_error: true
                                       - *delay_default
@@ -13327,16 +13348,39 @@ actions:
                                       - delay:
                                           milliseconds: 300
                                       - *variables_page_buttons
+                                      # Only the buttons the click can change are redrawn: the clicked button and the
+                                      # buttons sharing its entity or State Indicator Entity, e.g. scene buttons tracked
+                                      # by one input_select. Other entities changed by a custom action are redrawn by
+                                      # their state triggers. Available momentary entities without a State Indicator Entity
+                                      # are left out, as their state trigger shows them on for 800 ms and then off.
                                       - repeat:
                                           for_each: >
-                                            {{
-                                              buttons_pages.buttons
-                                              | selectattr("page", "defined")
-                                              | selectattr("page", "eq", nspanel_event.page)
-                                              | selectattr("entity", "defined")
-                                              | rejectattr("entity", "eq", [])
-                                              | list
-                                            }}
+                                            {%- set ns = namespace(items=[], click_entities=[last_click_button.entity]) -%}
+                                            {%- if last_click_button.state_entity is defined
+                                                  and last_click_button.state_entity is string
+                                                  and last_click_button.state_entity | length > 3
+                                                  and "." in last_click_button.state_entity -%}
+                                              {%- set ns.click_entities = ns.click_entities + [last_click_button.state_entity] -%}
+                                            {%- endif -%}
+                                            {%- for item in buttons_pages.buttons
+                                                  | selectattr("page", "defined")
+                                                  | selectattr("page", "eq", nspanel_event.page)
+                                                  | selectattr("entity", "defined")
+                                                  | rejectattr("entity", "eq", []) -%}
+                                              {%- set item_state_entity = item.state_entity
+                                                    if item.state_entity is defined
+                                                        and item.state_entity is string
+                                                        and item.state_entity | length > 3
+                                                        and "." in item.state_entity
+                                                    else item.entity -%}
+                                              {%- if (item.entity in ns.click_entities or item_state_entity in ns.click_entities)
+                                                    and not (item_state_entity == item.entity
+                                                      and item.entity.split(".")[0] in ["automation", "button", "input_button", "remote", "scene", "script"]
+                                                      and states(item.entity) not in ["unavailable"]) -%}
+                                                {%- set ns.items = ns.items + [item] -%}
+                                              {%- endif -%}
+                                            {%- endfor -%}
+                                            {{ ns.items }}
                                           sequence: *display_button_page_button
 
                       - alias: Climate page
@@ -13900,7 +13944,7 @@ actions:
         conditions:
           - condition: trigger
             id: trigger_buttonpage_state
-          - '{{ trigger.to_state.state not in enum.states.unknown }}'
+          - '{{ trigger.to_state.state not in enum.states.unknown or "unavailable" in [trigger.from_state.state, trigger.to_state.state] }}'
           - condition: or
             conditions:
               - '{{ pages.current in pages.buttonpages }}'
