@@ -146,12 +146,10 @@ constexpr HMIComponent VALUE_MIN = {"value_min", 6};  ///< Lower bound of the sc
 constexpr HMIComponent VALUE_MAX = {"value_max", 7};  ///< Upper bound of the scale (30 chars max)
 
 // Axis drawing: hidden hotspots and variables, drawn by the TFT relative to the waveform
-constexpr HMIComponent DRAW_FRAME = {
-    "draw_frame", 8};  ///< Hotspot: restores the background below the waveform and draws the bound lines
-constexpr HMIComponent TICK_X = {"tick_x",
-                                 9};  ///< Variable: offset of the next tick from the left of the waveform, in pixels
-constexpr HMIComponent TICK_TEXT = {"tick_text", 10};  ///< Variable: label of the next tick (2 chars max)
-constexpr HMIComponent DRAW_TICK = {"draw_tick", 11};  ///< Hotspot: draws the tick at tick_x with tick_text below it
+constexpr HMIComponent DRAW_FRAME = {"draw_frame", 8};  ///< Hotspot: clears the axis area and draws the bound lines
+constexpr HMIComponent TICK_X = {"tick_x", 9};          ///< Variable: tick offset from the waveform's left edge, in px
+constexpr HMIComponent TICK_TEXT = {"tick_text", 10};   ///< Variable: label of the next tick (2 chars max)
+constexpr HMIComponent DRAW_TICK = {"draw_tick", 11};   ///< Hotspot: draws a tick at tick_x, labelled tick_text
 
 // All visual components for iteration
 constexpr HMIComponent ALL[] = {PAGE_LABEL, ICON_STATE, BUTTON_BACK, WAVE, VALUE_NOW, VALUE_MIN, VALUE_MAX};
