@@ -5109,23 +5109,6 @@ trigger_variables:
       group05: !input utilities_page01_group05_line_reference
       group06: !input utilities_page01_group06_line_reference
 
-  sun_state_list: >
-    {{
-      (
-        states.sun
-        | map(attribute="state")
-        | list
-      )
-      if states.sun | length > 0
-      else []
-    }}
-  sun_is_up: >
-    {{
-      sun_state_list | first == "above_horizon"
-      if sun_state_list | length > 0
-      else true
-    }}
-
 variables:
   # Blueprint version will be following release version defined automatically when merging to main
   # There's no need to change it here
@@ -6295,6 +6278,25 @@ actions:
       # Set per iteration by "Entity details pages refresh".
       refresh_settled: false
 
+      # Not in trigger_variables: they are limited templates there and cannot read states.
+      sun_state_list: >
+        {{
+          (
+            states.sun
+            | map(attribute="state")
+            | list
+          )
+          if states.sun | length > 0
+          else []
+        }}
+      # Only below_horizon means night, so an unavailable or unknown sun keeps the day pictures.
+      sun_is_up: >
+        {{
+          sun_state_list | first != "below_horizon"
+          if sun_state_list | length > 0
+          else true
+        }}
+
       compact_unit_display: !input compact_unit_display
       # Home Assistant strips whitespace from rendered templates, so a variable holding only a space would always be empty.
       # The separator is built inline with ("" if compact_unit_display else " ") wherever a value and its unit are joined.
@@ -6431,11 +6433,17 @@ actions:
             partlycloudy: '{{ 11 if sun_is_up else 12}}'
             lightning_rainy: '{{ 13 if sun_is_up else 14}}'
             lightning-rainy: '{{ 13 if sun_is_up else 14}}'
-            execptional: '{{ 13 if sun_is_up else 14}}'
+            exceptional: '{{ 13 if sun_is_up else 14}}'
             clear_night: 15
             clear-night: 15
             unknown: 1
             unavailable: 1
+          weather_day:  # forecast days show these day pictures also after sunset
+            sunny: 2
+            partlycloudy: 11
+            lightning_rainy: 13
+            lightning-rainy: 13
+            exceptional: 13
 
       ##### Home page #####
       home_page:
@@ -7287,17 +7295,16 @@ actions:
 
             **How to Resolve This Issue**
 
-            Components must be updated in this order: **ESPHome**, then **TFT**, then **Blueprint**.
+            To fix this, update the firmware on your panel:
 
-            1. Update your ESPHome configuration to reference version {{ blueprint_version
-            }}{{ '' if esphome_api_outdated else ' (or at least ' ~ min_esphome_version_string ~ ')' }}.
+            1. Open the ESPHome dashboard, find your panel and click **Install**.
 
-            2. Install the new firmware on your panel.
+            2. After the panel restarts, wait about one minute: the display is updated automatically.
 
-            3. Let the panel upload the matching TFT file and reboot.
+            This notification clears itself once everything is up to date.
 
             *For more detailed instructions, please refer to the online documentation:
-            [How to Update](https://github.com/edwardtfn/NSPanel-Easy/blob/main/docs/howto.md).*
+            [How to Update the Firmware](https://github.com/edwardtfn/NSPanel-Easy/blob/main/docs/howto.md#update-esphome).*
             {% endif %}
         continue_on_error: true
       - alias: Custom action - ESPHome firmware outdated
@@ -10766,7 +10773,13 @@ actions:
                                     {%- if page_constructor -%}
                                       true
                                     {%- else -%}
-                                      {%- set old_state = trigger.event.data.old_state -%}
+                                      {#- Only state_changed events carry old_state; the details refresh loop runs from the panel event #}
+                                      {%- set old_state = (
+                                        trigger.event.data.old_state
+                                        if trigger is defined and trigger.event is defined and trigger.event.data is defined and trigger.event.data.old_state is defined
+                                        else none
+                                      ) -%}
+                                      {#- No previous state to compare against: push the options again #}
                                       {%- if old_state is none -%}
                                         true
                                       {%- else -%}
@@ -11911,7 +11924,11 @@ actions:
                                                 else "unavailable"
                                               ] | int(1)
                                               if condition == "unknown" and page_name == pages.weatherpages[0]
-                                              else nextion.pic.weather[condition] | int(1)
+                                              else (
+                                                nextion.pic.weather_day[condition]
+                                                if page_name != pages.weatherpages[0] and condition in nextion.pic.weather_day
+                                                else nextion.pic.weather[condition]
+                                              ) | int(1)
                                             }}
                                         continue_on_error: true
                                       - *delay_default
