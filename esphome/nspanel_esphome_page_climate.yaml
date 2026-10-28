@@ -251,7 +251,6 @@ script:
           disp1->set_component_text("temp_unit",                (id(units_separator) + "${temp_units}").c_str());
           const std::string& sep = id(mui_decimal_separator);
           const char dec_sep = sep.empty() ? '.' : sep[0];
-          disp1->show_component("current_temp");
           char buffer[15];
           const bool useDecimal = (temp_step % 10 != 0);
 
@@ -267,6 +266,8 @@ script:
             ESP_LOGV("${TAG_PAGE_CLIMATE}", "Show current temperature 'unavailable'");
             disp1->set_component_text("current_temp", "${LOCALIZATION[LANG].unavailable}");
           }
+          // Shown after its text: the page opens with it hidden, so it is drawn only once
+          disp1->show_component("current_temp");
 
           if (current_page_id != get_page_id("climate")) return;
 
