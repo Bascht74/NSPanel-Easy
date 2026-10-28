@@ -1543,6 +1543,7 @@ blueprint:
                   - climate
                   - cover
                   - fan
+                  - group
                   - humidifier
                   - input_boolean
                   - input_button
@@ -1630,6 +1631,7 @@ blueprint:
                   - climate
                   - cover
                   - fan
+                  - group
                   - humidifier
                   - input_boolean
                   - input_select
@@ -13058,6 +13060,16 @@ actions:
                                               {{ entity_domain }}.toggle
                                             {% elif entity_domain == "automation" %}
                                               automation.{{ domain_automation_button_action if domain_automation_button_action is string else "toggle"}}
+                                            {% elif entity_domain == "group" %}
+                                              {#- Old-style groups: set all members to the same state, based on the group state.  -#}
+                                              {#- homeassistant.toggle would toggle each member individually, keeping mixed states. -#}
+                                              {% if last_click_button_entity_state in enum.states.on %}
+                                                homeassistant.turn_off
+                                              {% elif last_click_button_entity_state in enum.states.off %}
+                                                homeassistant.turn_on
+                                              {% else %}
+                                                homeassistant.update_entity
+                                              {% endif %}  {#- group state #}
                                             {% elif entity_domain in ["button", "input_button"] %}
                                               {{ entity_domain }}.press
                                             {% elif entity_domain == "lawn_mower" %}
