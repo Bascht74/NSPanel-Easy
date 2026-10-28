@@ -6514,6 +6514,14 @@ actions:
             lightning_rainy: 13
             lightning-rainy: 13
             exceptional: 13
+            clear_night: 2  # a forecast covering daytime shows the day picture for clear sky
+            clear-night: 2
+          weather_night:  # forecast slots known to be entirely at night
+            sunny: 15
+            partlycloudy: 12
+            lightning_rainy: 14
+            lightning-rainy: 14
+            exceptional: 14
 
       ##### Home page #####
       home_page:
@@ -11825,6 +11833,53 @@ actions:
                                             | map(attribute="condition") | list | count > 0
                                           else None
                                         }}
+                                      # True only when every forecast slot of a forecast page is known to be at night:
+                                      # - daily: a slot covers a whole day, so it is never night;
+                                      # - twice_daily: every slot has is_daytime set to false;
+                                      # - hourly: every slot lies between sunset and sunrise, using the time of day of the next sun events.
+                                      #   Skipped when a sun event is more than 26 hours away (polar day or night) or the sun is not available.
+                                      # Anything else (missing data, legacy forecast attribute) keeps the day pictures.
+                                      forecast_is_night: >
+                                        {%- set items = forecast_day | selectattr("datetime", "defined") | list if datetime_is_string else [] -%}
+                                        {%- if items | count == 0 -%}
+                                          false
+                                        {%- elif forecast_type == "daily" -%}
+                                          false
+                                        {%- elif forecast_type == "twice_daily" -%}
+                                          {{ items | selectattr("is_daytime", "defined") | selectattr("is_daytime", "false") | list | count == items | count }}
+                                        {%- elif forecast_type == "hourly" -%}
+                                          {%- set sun_entity = states.sun | map(attribute="entity_id") | list | first | default(none) -%}
+                                          {%- set next_rising = as_datetime(state_attr(sun_entity, "next_rising") | string, none) if sun_entity else none -%}
+                                          {%- set next_setting = as_datetime(state_attr(sun_entity, "next_setting") | string, none) if sun_entity else none -%}
+                                          {%- set now_ts = as_timestamp(now()) -%}
+                                          {%- if next_rising is none or next_setting is none
+                                                or as_timestamp(next_rising) - now_ts > 93600
+                                                or as_timestamp(next_setting) - now_ts > 93600 -%}
+                                            false
+                                          {%- else -%}
+                                            {%- set rising = as_local(next_rising) -%}
+                                            {%- set setting = as_local(next_setting) -%}
+                                            {%- set setting_seconds = setting.hour * 3600 + setting.minute * 60 + setting.second -%}
+                                            {%- set night_seconds = (rising.hour * 3600 + rising.minute * 60 + rising.second - setting_seconds) % 86400 -%}
+                                            {%- set ns = namespace(night=true) -%}
+                                            {%- for item in items -%}
+                                              {%- set slot = as_datetime(item.datetime | string, none) -%}
+                                              {%- if slot is none -%}
+                                                {%- set ns.night = false -%}
+                                              {%- else -%}
+                                                {%- set slot = as_local(slot) -%}
+                                                {%- set after_setting = (slot.hour * 3600 + slot.minute * 60 + slot.second - setting_seconds) % 86400 -%}
+                                                {#- The whole hour of the slot must end before sunrise -#}
+                                                {%- if after_setting + 3600 > night_seconds -%}
+                                                  {%- set ns.night = false -%}
+                                                {%- endif -%}
+                                              {%- endif -%}
+                                            {%- endfor -%}
+                                            {{ ns.night }}
+                                          {%- endif -%}
+                                        {%- else -%}
+                                          false
+                                        {%- endif -%}
                                       precipitation: >
                                         {{
                                           forecast_day
@@ -12031,8 +12086,10 @@ actions:
                                               ] | int(1)
                                               if condition == "unknown" and page_name == pages.weatherpages[0]
                                               else (
-                                                nextion.pic.weather_day[condition]
-                                                if page_name != pages.weatherpages[0] and condition in nextion.pic.weather_day
+                                                nextion.pic.weather_night[condition]
+                                                if page_name != pages.weatherpages[0] and forecast_is_night and condition in nextion.pic.weather_night
+                                                else nextion.pic.weather_day[condition]
+                                                if page_name != pages.weatherpages[0] and not forecast_is_night and condition in nextion.pic.weather_day
                                                 else nextion.pic.weather[condition]
                                               ) | int(1)
                                             }}
