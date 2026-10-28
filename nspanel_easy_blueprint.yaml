@@ -10950,6 +10950,12 @@ actions:
                                   - *delay_default
 
                               ##### Always (construction and updates): push current preset_mode #####
+                              # Read the active preset again right before writing it. The automation runs in parallel mode, so
+                              # a newer state change may already have been pushed while this run sent the options above.
+                              - variables:
+                                  preset_mode_now: >-
+                                    {%- set preset_mode_attr = state_attr(climate_entity, "preset_mode") -%}
+                                    {{ preset_mode_attr | trim if preset_mode_attr is string and preset_mode_attr | length > 0 else "" }}
                               - if: '{{ preset_modes_raw | length > 0 }}'
                                 then:
                                   - action: 'esphome.{{ action_prefix }}_component_text_list'
@@ -10957,7 +10963,7 @@ actions:
                                       page: mem
                                       id: popup_select_current
                                       txt_list:
-                                        - '{{ current_preset_mode }}'
+                                        - '{{ preset_mode_now }}'
                                     continue_on_error: true
                                   - *delay_default
 
@@ -10979,7 +10985,7 @@ actions:
                                           "sleep": "bed",
                                           "activity": "motion-sensor"
                                         } -%}
-                                        {%- set preset = current_preset_mode | lower -%}
+                                        {%- set preset = preset_mode_now | lower -%}
                                         {%- set preset_active = preset | length > 0 and preset != "none" -%}
                                         {{
                                           [
