@@ -21,9 +21,15 @@ Flashing NSPanel Easy erases them, and they cannot be recovered or replaced afte
 Copies of the original firmware can be found online, but they carry the credentials of the panel they were copied from.
 When flashed to a different panel, the eWeLink app rejects the device, so the panel cannot be paired or used with Sonoff's software.
 
+<!-- markdownlint-disable MD028 -->
 > [!IMPORTANT]
 > A backup of your own panel is only possible **before** the first flash.
 > Once NSPanel Easy (or any other firmware) is installed, the original firmware and its credentials are gone.
+
+> [!IMPORTANT]
+> If you have more than one panel, make a separate backup of each one and label it clearly (for example, `nspanel_living_room_stock.bin`).
+> A backup only works on the panel it was taken from, as each one contains that panel's unique credentials.
+<!-- markdownlint-enable MD028 -->
 
 ## What Is and Isn't Included
 
@@ -41,9 +47,6 @@ This project does not distribute it, as it is Sonoff's proprietary software.
 > [!CAUTION]
 > The backup file contains your panel's unique credentials and may also contain your Wi-Fi network name and password.
 > Store it safely and **never share it**, including as an attachment on GitHub issues or Discord.
-
-Name the file in a way that identifies the panel it came from (for example, `nspanel_living_room_stock.bin`).
-A backup only works on the panel it was taken from.
 
 ## Creating the Backup
 
@@ -90,7 +93,7 @@ Restore the display first, while NSPanel Easy is still running, as it can transf
    Place the original Sonoff `tft` file on a local web server (for example, the `www` folder of Home Assistant),
    then send it to the panel with the [`upload_tft` action](api.md#tft-file-update-action-upload_tft).
 2. **Restore the ESP32 firmware:**
-   Open the panel, connect it as for the first flash, and write the backup to the start of the flash memory:
+   Open the panel, connect it as for the first flash, and write the backup taken from this panel to the start of the flash memory:
 
    ```bash
    esptool --port <PORT> --baud 115200 write-flash 0 nspanel_stock.bin
