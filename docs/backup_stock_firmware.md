@@ -11,6 +11,7 @@ to claim the warranty, or to sell or give the panel away.
 - [Keep Your Backup Private](#keep-your-backup-private)
 - [Creating the Backup](#creating-the-backup)
 - [Restoring the Original Firmware](#restoring-the-original-firmware)
+  - [Without a Backup](#without-a-backup)
 
 ## Why a Backup Is Needed
 
@@ -106,3 +107,12 @@ Restore the display first, while NSPanel Easy is still running, as it can transf
 > Once the original `tft` is installed, the display no longer responds to NSPanel Easy.
 > This is expected, and the panel will work again once the ESP32 firmware is restored.
 > If you change your mind, use the [TFT Transfer Troubleshooting Guide](tft_upload.md) to return to an NSPanel Easy `tft`.
+
+### Without a Backup
+
+If no backup was made before the first flash, the panel cannot be fully restored to its original state.
+Copies of the original firmware from other panels can be flashed, but the eWeLink app will reject the device, as explained in [Why a Backup Is Needed](#why-a-backup-is-needed).
+
+The original Sonoff `tft` can still be useful for troubleshooting, as it can be installed with step 1 above without restoring the ESP32 firmware.
+For example, if the touchscreen gives no visual response at all on Sonoff's own `tft`, the problem is very likely in the hardware.
+Use the [TFT Transfer Troubleshooting Guide](tft_upload.md) to return to an NSPanel Easy `tft` afterwards.
