@@ -713,36 +713,5 @@ TouchCap swipe
         
         Touch Release Event
             swipestore.en=0
-            // Touch has ended, x
-            if(tch0==0)
-            {
-                swipec=swipex-tch2
-                // From Left to Right
-                if(swipec>swipedx)
-                {
-                    //page
-                }
-                // Right to Left
-                swipec2=0-swipedx
-                if(swipec<swipec2)
-                {
-                    //page
-                }
-            }
-            // Touch has ended, y
-            if(tch1==0)
-            {
-                swipec=swipey-tch3
-                // From Up to Down
-                if(swipec>100)
-                {
-                    //page
-                }
-                // Down to Up
-                swipec2=0-swipedy
-                if(swipec<-100)
-                {
-                    //page
-                }
-            }
+            // No swipe navigation on this page
         

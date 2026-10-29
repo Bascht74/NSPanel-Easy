@@ -478,41 +478,47 @@ Timer log_scroll
     
     Events
         Timer Event
-            strlen log_body.txt,log_len.val
-            log_pos.val=0
-            log_line_count.val=0
-            log_start_pos.val=0
-            log_end_pos.val=0
-            log_temp.txt=""
-            // Count the number of lines (instances of \r)
-            while(log_pos.val<log_len.val)
+            // Count only after the log changed: ESPHome only appends, a trim below forces the next run
+            strlen log_body.txt,log_pos.val
+            if(log_pos.val!=log_len.val)
             {
-                // Extract each character to find \r
-                substr log_body.txt,log_temp.txt,log_pos.val,2
-                if(log_temp.txt=="\r")
+                log_len.val=log_pos.val
+                log_pos.val=0
+                log_line_count.val=0
+                log_start_pos.val=0
+                log_end_pos.val=0
+                log_temp.txt=""
+                // Count the number of lines (instances of \r)
+                while(log_pos.val<log_len.val)
                 {
-                    log_line_count.val++
-                    // Record the position of the first \r
-                    if(log_line_count.val==1)
+                    // Extract each character to find \r
+                    substr log_body.txt,log_temp.txt,log_pos.val,2
+                    if(log_temp.txt=="\r")
                     {
-                        log_start_pos.val=log_pos.val
+                        log_line_count.val++
+                        // Record the position of the first \r
+                        if(log_line_count.val==1)
+                        {
+                            log_start_pos.val=log_pos.val
+                        }
+                        // Record the position of the second \r
+                        if(log_line_count.val==2)
+                        {
+                            log_end_pos.val=log_pos.val
+                        }
                     }
-                    // Record the position of the second \r
-                    if(log_line_count.val==2)
-                    {
-                        log_end_pos.val=log_pos.val
-                    }
+                    log_pos.val++
                 }
-                log_pos.val++
-            }
-            // Check if the number of lines exceeds the maximum allowed
-            if(log_line_count.val>log_max_lines.val)
-            {
-                // If more than max_lines, remove the first line
-                if(log_end_pos.val>0)
+                // Check if the number of lines exceeds the maximum allowed
+                if(log_line_count.val>log_max_lines.val)
                 {
-                    // Remove the first line including the newline character
-                    substr log_body.txt,log_body.txt,log_start_pos.val+1,log_len.val-log_start_pos.val-1
+                    // If more than max_lines, remove the first line
+                    if(log_end_pos.val>0)
+                    {
+                        // Remove the first line including the newline character
+                        substr log_body.txt,log_body.txt,log_start_pos.val+1,log_len.val-log_start_pos.val-1
+                        log_len.val=-1  // the log changed: count again on the next tick
+                    }
                 }
             }
             doevents

@@ -92,12 +92,9 @@ Page home
                     vis value04_icon,sys2
                 }
             }
-            // HW Button's labels
-            if(display_mode==3)
-            {
-                vis left_bt_text,0
-                vis right_bt_text,0
-            }
+            // HW Button's labels: ESPHome draws them with xstr, the empty components stay hidden
+            vis left_bt_text,0
+            vis right_bt_text,0
             dim=brightness
             sendme
         
@@ -1399,7 +1396,7 @@ Timer short_click_tm
     Attributes
         ID         : 47
         Scope      : local
-        Period (ms): 100
+        Period (ms): 50
         Enabled    : no
     
     Events
@@ -1426,6 +1423,8 @@ TouchCap swipe
     
     Events
         Touch Press Event
+            swipex=tch0 // Seed with the press point: swipestore samples only after 50 ms
+            swipey=tch1
             swipestore.en=1 // Start swipestore timer
             dim=brightness // Set brightness to saved value (from HA)
         

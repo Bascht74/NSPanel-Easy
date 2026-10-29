@@ -520,20 +520,4 @@ TouchCap swipe
                     page weather02
                 }
             }
-            // Touch has ended, y
-            if(tch1==0)
-            {
-                swipec=swipey-tch3
-                // From Up to Down
-                if(swipec>100)
-                {
-                    //page
-                }
-                // Down to Up
-                swipec2=0-swipedy
-                if(swipec<-100)
-                {
-                    //page
-                }
-            }
         

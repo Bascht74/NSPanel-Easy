@@ -624,7 +624,7 @@ Text button01icon
         Effect Time             : 300
         Fill                    : crop image
         Associated Keyboard     : none
-        Font ID                 : 8
+        Font ID                 : 10
         Cropped Back. Picture ID: 0
         Horizontal Alignment    : center
         Vertical Alignment      : center
@@ -651,7 +651,7 @@ Text button02icon
         Effect Time             : 300
         Fill                    : crop image
         Associated Keyboard     : none
-        Font ID                 : 8
+        Font ID                 : 10
         Cropped Back. Picture ID: 0
         Horizontal Alignment    : center
         Vertical Alignment      : center
@@ -678,7 +678,7 @@ Text button03icon
         Effect Time             : 300
         Fill                    : crop image
         Associated Keyboard     : none
-        Font ID                 : 8
+        Font ID                 : 10
         Cropped Back. Picture ID: 0
         Horizontal Alignment    : center
         Vertical Alignment      : center
@@ -705,7 +705,7 @@ Text button04icon
         Effect Time             : 300
         Fill                    : crop image
         Associated Keyboard     : none
-        Font ID                 : 8
+        Font ID                 : 10
         Cropped Back. Picture ID: 0
         Horizontal Alignment    : center
         Vertical Alignment      : center
@@ -732,7 +732,7 @@ Text button05icon
         Effect Time             : 300
         Fill                    : crop image
         Associated Keyboard     : none
-        Font ID                 : 8
+        Font ID                 : 10
         Cropped Back. Picture ID: 0
         Horizontal Alignment    : center
         Vertical Alignment      : center
@@ -759,7 +759,7 @@ Text button06icon
         Effect Time             : 300
         Fill                    : crop image
         Associated Keyboard     : none
-        Font ID                 : 8
+        Font ID                 : 10
         Cropped Back. Picture ID: 0
         Horizontal Alignment    : center
         Vertical Alignment      : center
@@ -786,7 +786,7 @@ Text button07icon
         Effect Time             : 300
         Fill                    : crop image
         Associated Keyboard     : none
-        Font ID                 : 8
+        Font ID                 : 10
         Cropped Back. Picture ID: 0
         Horizontal Alignment    : center
         Vertical Alignment      : center
@@ -813,7 +813,7 @@ Text button08icon
         Effect Time             : 300
         Fill                    : crop image
         Associated Keyboard     : none
-        Font ID                 : 8
+        Font ID                 : 10
         Cropped Back. Picture ID: 0
         Horizontal Alignment    : center
         Vertical Alignment      : center
