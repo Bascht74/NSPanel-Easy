@@ -70,6 +70,9 @@ Optional packages that extend the base firmware:
   Click any icon to copy its `mdi:` name.
 - [Using Different Versions](different_version.md) — switching between `main`,
   `beta`, `dev`, or a tagged release for each component.
+- [Backing Up the Original Firmware](backup_stock_firmware.md) — save the
+  original Sonoff firmware before the first flash, so the panel can be
+  restored later.
 - [NSPanel Blank](nspanel_blank.md) — the lightweight TFT used for first-time
   installations, when the original Sonoff firmware is still on the Nextion
   display.
