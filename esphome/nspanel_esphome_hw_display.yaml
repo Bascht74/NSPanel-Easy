@@ -62,6 +62,7 @@ substitutions:
   # Longest wait for the display to report a page sent by goto_page. It counts from queuing `page`,
   # so it must exceed the Nextion max_queue_age (8 s by default), until which the command may still go out.
   PAGE_CHANGE_TIMEOUT: 10s
+  CLICK_DEBOUNCE_MS: '100'  # A second short click of the same component within this time is dropped
   include_action_wake_up: false
   _pkg_action_wake_up:
     api:
@@ -281,6 +282,22 @@ script:
                 ESP_LOGW("${TAG_HW_DISPLAY}", "Bad params");
                 return;
               }
+
+              // A second short click of the same component within ${CLICK_DEBOUNCE_MS} ms is a double contact of
+              // one tap: passed on, it would toggle the entity back. Long clicks are always passed on.
+              if (event == "short_click") {
+                static std::string last_click;      // Page and component of the last short click passed on
+                static uint32_t last_click_ms = 0;  // When it was passed on
+                const uint32_t now = millis();
+                const std::string click = page + "," + params[2];
+                if (click == last_click and now - last_click_ms < ${CLICK_DEBOUNCE_MS}) {
+                  ESP_LOGD("${TAG_HW_DISPLAY}", "Repeated short_click dropped: %s, %" PRIu32 " ms after the last one",
+                                                click.c_str(), now - last_click_ms);
+                  return;
+                }
+                last_click = click;
+                last_click_ms = now;
+              }  // if (event == "short_click")
 
               // A page package may claim the click, e.g. to ask for confirmation
               if (click_interceptor and click_interceptor(page, event, params[2])) {
