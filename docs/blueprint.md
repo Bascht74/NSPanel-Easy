@@ -180,6 +180,9 @@ If the NSPanel loses Wi-Fi connection or HA is down, the hardware button can the
 
 The entity that should be switched with the left/right hardware button.
 
+Old-style groups (`group.*`) are supported: a press turns all members off when the group is on, and on when the group is off, so all members end up in the same state.
+Members must support `turn_on`/`turn_off` (e.g. lights, switches, fans or covers); groups of locks are not supported.
+
 ### Left/Right Hardware Button - Label (Optional)
 
 Label on the screen above the corresponding hardware button, shown on the pages selected in [Labels Pages](#labels-pages).
