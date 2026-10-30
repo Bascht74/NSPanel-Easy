@@ -15,7 +15,7 @@ substitutions:
   page_entities_value_font_medium_max_len: 12
 
   ##### Internal #####
-  half_width_chars: "iljtIf '-,;:!.\\\"|()[]{}*^~\\\\/_"
+  half_width_chars: "iljtIf '-,;:!.°\\\"|()[]{}*^~\\\\/_"
   TAG_PAGE_ENTITIES: nspanel.page.entities
 
 esphome:
