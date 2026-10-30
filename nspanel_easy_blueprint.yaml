@@ -1543,6 +1543,7 @@ blueprint:
                   - climate
                   - cover
                   - fan
+                  - group
                   - humidifier
                   - input_boolean
                   - input_button
@@ -1630,6 +1631,7 @@ blueprint:
                   - climate
                   - cover
                   - fan
+                  - group
                   - humidifier
                   - input_boolean
                   - input_select
@@ -6347,6 +6349,13 @@ actions:
       # the entity stayed quiet until the wait timed out (settle pass or fallback refresh).
       # Set per iteration by "Entity details pages refresh".
       refresh_settled: false
+      # Milliseconds a button for an automation, button, input button, remote, scene or script shows on
+      # before it is drawn off again.
+      momentary_duration_ms: 800
+      # False when a button page state trigger is not an activation of its automation, button, input button,
+      # scene or script, e.g. a script ending more than momentary_duration_ms after its start or an attribute-only update.
+      # Set by "Update button's entities".
+      momentary_activated: true
 
       # Not in trigger_variables: they are limited templates there and cannot read states.
       sun_state_list: >
@@ -9516,6 +9525,7 @@ actions:
                                                   and "unavailable" not in [entity_state, state_entity_state]
                                                   and (trigger.from_state is not defined or trigger.from_state is none or trigger.from_state.state not in ["unavailable"])
                                                   and not page_constructor
+                                                  and momentary_activated
                                                   and trigger.entity_id in [repeat.item.entity, state_entity_id]
                                                   and state_entity_id == entity_id)
                                             }}
@@ -9587,11 +9597,12 @@ actions:
                                         - '{{ btn_state }}'
                                         - '{{ entity_domain in ["automation", "button", "input_button", "remote", "scene", "script"] }}'
                                         - '{{ not page_constructor }}'
+                                        - '{{ momentary_activated }}'
                                         - '{{ trigger.entity_id in [repeat.item.entity, state_entity_id] }}'
                                         - '{{ state_entity_id == entity_id }}'
                                       then:
                                         - delay:
-                                            milliseconds: 800
+                                            milliseconds: '{{ momentary_duration_ms }}'
                                         - action: 'esphome.{{ action_prefix }}_button'
                                           data:
                                             page: '{{ repeat.item.page }}'
@@ -13115,6 +13126,16 @@ actions:
                                               {{ entity_domain }}.toggle
                                             {% elif entity_domain == "automation" %}
                                               automation.{{ domain_automation_button_action if domain_automation_button_action is string else "toggle"}}
+                                            {% elif entity_domain == "group" %}
+                                              {#- Old-style groups: set all members to the same state, based on the group state.  -#}
+                                              {#- homeassistant.toggle would toggle each member individually, keeping mixed states. -#}
+                                              {% if last_click_button_entity_state in enum.states.on %}
+                                                homeassistant.turn_off
+                                              {% elif last_click_button_entity_state in enum.states.off %}
+                                                homeassistant.turn_on
+                                              {% else %}
+                                                homeassistant.update_entity
+                                              {% endif %}  {#- group state #}
                                             {% elif entity_domain in ["button", "input_button"] %}
                                               {{ entity_domain }}.press
                                             {% elif entity_domain == "lawn_mower" %}
@@ -13410,6 +13431,11 @@ actions:
                                       # by one input_select. Other entities changed by a custom action are redrawn by
                                       # their state triggers. Available momentary entities without a State Indicator Entity
                                       # are left out, as their state trigger shows them on for 800 ms and then off.
+                                      # Buttons a state trigger has drawn since the click are skipped: the newest update of their
+                                      # entity or State Indicator Entity came after the click, with a state that trigger draws.
+                                      # Nothing is skipped while other runs of this automation were running at the click or are running
+                                      # now, as a state trigger run may have been dropped at the maximum number of runs, or while
+                                      # state triggers are blocked (no device name).
                                       - repeat:
                                           for_each: >
                                             {%- set ns = namespace(items=[], click_entities=[last_click_button.entity]) -%}
@@ -13419,6 +13445,9 @@ actions:
                                                   and "." in last_click_button.state_entity -%}
                                               {%- set ns.click_entities = ns.click_entities + [last_click_button.state_entity] -%}
                                             {%- endif -%}
+                                            {%- set skip_drawn = has_value(device_name_sensor)
+                                                  and this.attributes.current | int(1) == 0
+                                                  and state_attr(this.entity_id, "current") == 1 -%}
                                             {%- for item in buttons_pages.buttons
                                                   | selectattr("page", "defined")
                                                   | selectattr("page", "eq", nspanel_event.page)
@@ -13434,7 +13463,17 @@ actions:
                                                     and not (item_state_entity == item.entity
                                                       and item.entity.split(".")[0] in ["automation", "button", "input_button", "remote", "scene", "script"]
                                                       and states(item.entity) not in ["unavailable"]) -%}
-                                                {%- set ns.items = ns.items + [item] -%}
+                                                {%- set newest = [
+                                                        states[item.entity] if "." in item.entity else none,
+                                                        states[item_state_entity] if "." in item_state_entity else none
+                                                      ]
+                                                      | reject("none") | sort(attribute="last_updated") | last | default(none) -%}
+                                                {%- if not (skip_drawn
+                                                      and newest is not none
+                                                      and newest.last_updated > trigger.event.time_fired
+                                                      and (newest.state not in enum.states.unknown or newest.state == "unavailable")) -%}
+                                                  {%- set ns.items = ns.items + [item] -%}
+                                                {%- endif -%}
                                               {%- endif -%}
                                             {%- endfor -%}
                                             {{ ns.items }}
@@ -14010,6 +14049,24 @@ actions:
         sequence:
           - variables:
               detailed_entity_state: '{{ states(detailed_entity) if detailed_entity | length > 0 else "" }}'
+              # Activation: a script or automation run started less than momentary_duration_ms before the update (its start, or the end
+              # of a short run), an automation is turned on or off, a button or input button is pressed, a scene is activated.
+              # Remotes are not filtered.
+              momentary_activated: >
+                {% set domain = trigger.entity_id.split(".")[0] %}
+                {% if domain not in ["automation", "button", "input_button", "scene", "script"] %}
+                  {{ true }}
+                {% elif trigger.from_state is none or trigger.to_state is none %}
+                  {{ false }}
+                {% elif domain in ["automation", "script"] %}
+                  {% set last_triggered = trigger.to_state.attributes.get("last_triggered") %}
+                  {{
+                    (as_timestamp(trigger.to_state.last_updated) - as_timestamp(last_triggered, 0) < momentary_duration_ms / 1000)
+                    or (domain == "automation" and [trigger.from_state.state, trigger.to_state.state] in [["off", "on"], ["on", "off"]])
+                  }}
+                {% else %}
+                  {{ trigger.to_state.state != trigger.from_state.state and trigger.from_state.state != "unavailable" }}
+                {% endif %}
           - choose:
               - alias: Buttons pages
                 conditions:
