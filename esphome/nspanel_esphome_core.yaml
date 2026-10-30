@@ -171,13 +171,13 @@ script:  # Scripts
   - id: wait_for_api
     mode: single
     then:
-      - repeat:
-          count: 60  # seconds
-          then:
-            - lambda: |-
-                if (api_server->is_connected_with_state_subscription()) wait_for_api->stop();
-                if (iteration % 5 == 1) boot_log->execute("Boot", "Waiting for API");
-            - delay: 1s
+      - lambda: |-
+          if (not api_server->is_connected_with_state_subscription()) boot_log->execute("Boot", "Waiting for API");
+      - wait_until:
+          condition:
+            api.connected:
+              state_subscription_only: true
+          timeout: 60s
 
   - id: wait_for_blueprint
     mode: single
