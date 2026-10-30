@@ -208,7 +208,8 @@ script:
     then:
       - lambda: |-
           if (!climate_embedded_visible) return;
-          if (current_page_id != get_page_id("climate")) return;
+          // Not while the display is leaving climate: the commands would reach the next page
+          if (current_page_id != get_page_id("climate") or id(page_change_target) != UINT8_MAX) return;
 
           ESP_LOGV("${TAG_ADDON_CLIMATE}", "Construct climate page with embedded climate");
 
@@ -510,7 +511,8 @@ script:
 
           if (changed) chip_render(CHIP_IDX_CLIMATE);
 
-          if (current_page_id != get_page_id("climate")) return;
+          // Not while the display is leaving climate: target_icon would be written on the next page
+          if (current_page_id != get_page_id("climate") or id(page_change_target) != UINT8_MAX) return;
           if (!climate_embedded_visible) return;
 
           // Apply the icon and color to the target icon on climate page

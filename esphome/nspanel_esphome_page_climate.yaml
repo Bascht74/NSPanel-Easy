@@ -239,6 +239,12 @@ script:
             ESP_LOGW("${TAG_PAGE_CLIMATE}", "'set_climate' was called when page 'climate' is not visible");
             return;
           }
+          // The display is leaving climate: the commands would reach the next page
+          if (id(page_change_target) != UINT8_MAX) {
+            ESP_LOGD("${TAG_PAGE_CLIMATE}", "Skipping climate render: page 'climate' is being left for '%s'",
+                                            page_names[id(page_change_target)]);
+            return;
+          }
           if (temp_step <= 0) {
             ESP_LOGW("${TAG_PAGE_CLIMATE}", "Invalid temp_step (<= 0); skipping climate render");
             return;

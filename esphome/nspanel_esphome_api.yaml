@@ -223,7 +223,9 @@ api:
 
             const bool is_chip_target = (page == "chips");
             const bool target_is_home_page = (page == "home");
-            const bool target_is_current_page = (page == current_page->state) || is_chip_target;
+            // Not while the display is leaving the page: a name without the page prefix would reach the next one
+            const bool target_is_current_page =
+                (page == current_page->state && id(page_change_target) == UINT8_MAX) || is_chip_target;
 
             // Only process if home page (global) OR current page
             if (!target_is_home_page && !target_is_current_page) {
@@ -458,6 +460,11 @@ script:
 
           // Apply the vis command only when the target page is currently visible
           if (page.empty() || is_current_page) {
+            // `vis` takes no page prefix: while the display is leaving the page, it would reach the next one
+            if (id(page_change_target) != UINT8_MAX) {
+              ESP_LOGV("${TAG_API}", "Skipping: page '%s' is being left", component_page.c_str());
+              return;
+            }
             disp1->set_component_visibility(target_id, visible);
             return;
           }

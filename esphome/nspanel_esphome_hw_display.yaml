@@ -59,6 +59,9 @@ substitutions:
       TEXT: "NSPanel Blank"
 
   TAG_HW_DISPLAY: nspanel.hw.display
+  # Longest wait for the display to report a page sent by goto_page. It counts from queuing `page`,
+  # so it must exceed the Nextion max_queue_age (8 s by default), until which the command may still go out.
+  PAGE_CHANGE_TIMEOUT: 10s
   include_action_wake_up: false
   _pkg_action_wake_up:
     api:
@@ -83,7 +86,7 @@ display:
       then:
         - lambda: |-
             current_page_id = get_page_id("boot");
-            id(page_change_pending) = false;  // The display restarted on the boot page
+            id(page_change_target) = UINT8_MAX;  // The display restarted on the boot page
             wait_for_display->stop();
             ESP_LOGI("${TAG_HW_DISPLAY}", "Nextion setup triggered");
             system_flags.nextion_ready = true;
@@ -119,12 +122,15 @@ globals:
     restore_value: true
     initial_value: ${button_back_font}
 
-  # Set by goto_page when it sends a page, cleared when the display reports a page.
-  # Until then current_page_id still holds the page being left.
-  - id: page_change_pending
-    type: bool
+  # Page sent by goto_page that the display has not reported yet, UINT8_MAX when none.
+  # Until then current_page_id still holds the page being left, and a command for it would reach
+  # the next page. Another page reported in between (shown by the display before the command
+  # arrived, e.g. after a swipe) does not end the wait. A report of boot (the display restarted),
+  # page_change_timeout and stop_all do.
+  - id: page_change_target
+    type: uint8_t
     restore_value: false
-    initial_value: 'false'
+    initial_value: 'UINT8_MAX'
 
 nspanel_easy:
   detailed_entity_id: detailed_entity
@@ -325,7 +331,9 @@ script:
             return;
           }
           ESP_LOGVV("${TAG_HW_DISPLAY}", "Send page id '%" PRIu8 "' to Nextion", page_id);
-          id(page_change_pending) = true;  // Cleared by page_change once the display reports a page
+          // Cleared by page_change (this page or boot reported), page_change_timeout or stop_all
+          id(page_change_target) = page_id;
+          page_change_timeout->execute();
           disp1->goto_page(page_id);
 
   - id: page_change
@@ -341,7 +349,14 @@ script:
             last_page_id = current_page_id;
             current_page_id = new_page_id;
           }
-          id(page_change_pending) = false;  // current_page_id now holds the page the display shows
+          // Boot is shown only after a display restart (Program.s) and never sent by goto_page.
+          // on_setup does not cover a later restart, as it fires once per run.
+          if (new_page_id == id(page_change_target) or new_page_id == get_page_id("boot")) {
+            id(page_change_target) = UINT8_MAX;  // current_page_id now holds the page the display shows
+            page_change_timeout->stop();
+          } else if (id(page_change_target) != UINT8_MAX) {
+            ESP_LOGD("${TAG_HW_DISPLAY}", "Still waiting for page '%s'", page_names[id(page_change_target)]);
+          }  // if (new_page_id == page_change_target)
 
           // Page entry resets visibility to the TFT defaults, so no restore is pending
           unavailable_unhide_pending = false;
@@ -407,6 +422,16 @@ script:
             resync_display->execute();
           }
 
+  - id: page_change_timeout  # Ends the wait for a page the display never reports, e.g. one it did not get
+    mode: restart
+    then:
+      - delay: ${PAGE_CHANGE_TIMEOUT}
+      - lambda: |-
+          if (id(page_change_target) == UINT8_MAX) return;
+          ESP_LOGW("${TAG_HW_DISPLAY}", "Page '%s' not reported within ${PAGE_CHANGE_TIMEOUT}",
+                                        page_names[id(page_change_target)]);
+          id(page_change_target) = UINT8_MAX;
+
   - id: reset_globals
     mode: restart
     parameters:
@@ -441,6 +466,8 @@ script:
           event_from_display->stop();
           goto_page->stop();
           page_change->stop();
+          page_change_timeout->stop();
+          id(page_change_target) = UINT8_MAX;  // The timeout is stopped, so a page never reported would block for good
           reset_globals->stop();
           resync_display->stop();
           set_brightness->stop();

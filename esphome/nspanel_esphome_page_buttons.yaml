@@ -58,6 +58,12 @@ api:
                                       page.c_str(), page_names[current_page_id]);
               return;
             }
+            // The display is leaving this page: the commands would reach the next one
+            if (id(page_change_target) != UINT8_MAX) {
+              ESP_LOGD("${TAG_PAGE_BUTTONS}", "Skipping button render: page '%s' is being left for '%s'",
+                                      page.c_str(), page_names[id(page_change_target)]);
+              return;
+            }
 
             action_button->execute(
               page_id,
@@ -99,15 +105,15 @@ script:
       # directly while spacing-deferred entries are still waiting is queued behind
       # them, and its ack removes an entry that was never sent, so one component
       # keeps its previous appearance. The timeout keeps a stuck entry from
-      # blocking the render, and a page change ends the wait right away, as the
-      # render below is skipped anyway and the queue may already hold the new
-      # page's commands.
+      # blocking the render, and a page change (also one goto_page has sent but the
+      # display has not reported yet) ends the wait right away, as the render below
+      # is skipped anyway and the queue may already hold the new page's commands.
       - wait_until:
           condition:
-            lambda: return (current_page_id != page_id) or (disp1->queue_size() == 0);
+            lambda: return (current_page_id != page_id) or (id(page_change_target) != UINT8_MAX) or (disp1->queue_size() == 0);
           timeout: ${BUTTON_RENDER_QUEUE_TIMEOUT}
       - lambda: |-
-          if (current_page_id != page_id) return;
+          if (current_page_id != page_id or id(page_change_target) != UINT8_MAX) return;
 
           // Timeout reached without draining the queue: render anyway, but make it visible
           const size_t queue_size = disp1->queue_size();
