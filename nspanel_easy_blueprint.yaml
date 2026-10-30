@@ -6349,6 +6349,13 @@ actions:
       # the entity stayed quiet until the wait timed out (settle pass or fallback refresh).
       # Set per iteration by "Entity details pages refresh".
       refresh_settled: false
+      # Milliseconds a button for an automation, button, input button, remote, scene or script shows on
+      # before it is drawn off again.
+      momentary_duration_ms: 800
+      # False when a button page state trigger is not an activation of its automation, button, input button,
+      # scene or script, e.g. a script ending more than momentary_duration_ms after its start or an attribute-only update.
+      # Set by "Update button's entities".
+      momentary_activated: true
 
       # Not in trigger_variables: they are limited templates there and cannot read states.
       sun_state_list: >
@@ -9510,6 +9517,7 @@ actions:
                                                   and "unavailable" not in [entity_state, state_entity_state]
                                                   and (trigger.from_state is not defined or trigger.from_state is none or trigger.from_state.state not in ["unavailable"])
                                                   and not page_constructor
+                                                  and momentary_activated
                                                   and trigger.entity_id in [repeat.item.entity, state_entity_id]
                                                   and state_entity_id == entity_id)
                                             }}
@@ -9581,11 +9589,12 @@ actions:
                                         - '{{ btn_state }}'
                                         - '{{ entity_domain in ["automation", "button", "input_button", "remote", "scene", "script"] }}'
                                         - '{{ not page_constructor }}'
+                                        - '{{ momentary_activated }}'
                                         - '{{ trigger.entity_id in [repeat.item.entity, state_entity_id] }}'
                                         - '{{ state_entity_id == entity_id }}'
                                       then:
                                         - delay:
-                                            milliseconds: 800
+                                            milliseconds: '{{ momentary_duration_ms }}'
                                         - action: 'esphome.{{ action_prefix }}_button'
                                           data:
                                             page: '{{ repeat.item.page }}'
@@ -13983,6 +13992,24 @@ actions:
         sequence:
           - variables:
               detailed_entity_state: '{{ states(detailed_entity) if detailed_entity | length > 0 else "" }}'
+              # Activation: a script or automation run started less than momentary_duration_ms before the update (its start, or the end
+              # of a short run), an automation is turned on or off, a button or input button is pressed, a scene is activated.
+              # Remotes are not filtered.
+              momentary_activated: >
+                {% set domain = trigger.entity_id.split(".")[0] %}
+                {% if domain not in ["automation", "button", "input_button", "scene", "script"] %}
+                  {{ true }}
+                {% elif trigger.from_state is none or trigger.to_state is none %}
+                  {{ false }}
+                {% elif domain in ["automation", "script"] %}
+                  {% set last_triggered = trigger.to_state.attributes.get("last_triggered") %}
+                  {{
+                    (as_timestamp(trigger.to_state.last_updated) - as_timestamp(last_triggered, 0) < momentary_duration_ms / 1000)
+                    or (domain == "automation" and [trigger.from_state.state, trigger.to_state.state] in [["off", "on"], ["on", "off"]])
+                  }}
+                {% else %}
+                  {{ trigger.to_state.state != trigger.from_state.state and trigger.from_state.state != "unavailable" }}
+                {% endif %}
           - choose:
               - alias: Buttons pages
                 conditions:
