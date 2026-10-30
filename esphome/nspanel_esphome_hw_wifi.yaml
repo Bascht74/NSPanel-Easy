@@ -140,8 +140,12 @@ script:
       - lambda: |-
           if (not wifi_component->is_connected()) {
             wifi_component->enable();
-            ESP_LOGW("DEBUG", "Retrying Wi-Fi connection");
-            wifi_component->retry_connect();
+            // During boot the Wi-Fi component is still connecting on its own;
+            // a retry would abort a fast_connect attempt and start a scan.
+            if (system_flags.boot_completed) {
+              ESP_LOGW("DEBUG", "Retrying Wi-Fi connection");
+              wifi_component->retry_connect();
+            }
           }
       - repeat:
           count: 300  # seconds
