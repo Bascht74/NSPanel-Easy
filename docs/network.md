@@ -31,8 +31,11 @@ Table of contents:
 
 - The panel connects to a 2.4 GHz Wi-Fi network. 5 GHz networks are not supported by the ESP32.
 - By default, the IP address, gateway and DNS server are set automatically by your router (DHCP).
-- Home Assistant and the ESPHome Device Builder connect to the panel. The panel gets its time from Home Assistant.
-- The panel needs internet access for a single purpose: downloading the display (TFT) file from GitHub.
+- Home Assistant and the ESPHome Device Builder connect to the panel. By default, the panel gets its time from Home
+  Assistant.
+- With the default settings, the panel needs internet access for a single purpose: downloading the display (TFT) file
+  from GitHub. Customizations connecting to the internet, such as public Network Time (SNTP) servers, need their own
+  firewall rules.
 - No telemetry, analytics, cloud service, or "phone home" exists. No information about your home, Home Assistant, or
   entities is sent anywhere outside your network.
 
@@ -210,11 +213,13 @@ selected in the **Update TFT - Display Model** setting.
 
 The download happens only when one of the following occurs:
 
-- **Automatic update:** about 65 seconds after boot, when the TFT on the display is older than the version required by
+- **Automatic update:** about 65 seconds after the display is ready at boot, when the TFT on the display is older than the version required by
   the firmware. This typically happens once, right after a firmware update. It can be disabled with
   `upload_tft_automatically: false`.
 - **Manual update:** when the **Update TFT display** button is pressed in Home Assistant.
 - **Action call:** when the `upload_tft` action is called (only available when `include_action_upload_tft: true`).
+- **Baud rate scan:** when the **Scan baud rate** button finds a working baud rate (only available when
+  `include_button_scan_baud_rate: true`).
 
 Outside of a TFT update, the panel does not connect to the internet.
 
@@ -250,8 +255,10 @@ the download fails, the panel:
 As the TFT is still outdated after the restart, the automatic update starts again on the next boot, so the cycle
 repeats until the download succeeds. In the meantime, the panel is mostly unusable.
 
-When automatic updates are disabled (`upload_tft_automatically: false`), the panel does not try to download the file,
-but it keeps running with an outdated TFT, which may cause missing or broken features until the TFT is updated.
+When automatic updates are disabled (`upload_tft_automatically: false`), the panel does not try to download the file
+by itself, but it keeps running with an outdated TFT, which may cause missing or broken features until the TFT is
+updated. A manual update still downloads the file and, if the download fails, it also retries and restarts the panel,
+but without starting again on the next boot.
 
 ### Running without internet access
 
@@ -262,7 +269,8 @@ Choose one of the options below:
 - **Serve the TFT files locally:** download the TFT files matching your firmware version from the
   [`hmi`](https://github.com/edwardtfn/NSPanel-Easy/tree/latest/hmi) folder, copy them to a local web server (for example,
   the `www` folder of Home Assistant, served as `/local/`), and set `nextion_update_base_url` to that folder. The model
-  and version selection keep working, but the files must be updated on every release. See
+  selection and the automatic updates keep working, but the URL does not include the version: replace the files in
+  that folder with the ones matching your firmware version on every release, before updating the firmware. See
   [Using a local base URL](addon_upload_tft.md#example-using-a-local-base-url-with-automatic-model-selection).
 
 ## Firewall rules
