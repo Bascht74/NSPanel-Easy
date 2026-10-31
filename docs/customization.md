@@ -11,10 +11,6 @@ Table of contents:
   - [Custom OTA password](#custom-ota-password)
   - [OTA encryption](#ota-encryption)
   - [Web server credentials](#web-server-credentials)
-  - [Reboot when API fails](#reboot-when-api-fails)
-  - [Manual IP](#manual-ip)
-  - [Hidden Wi-Fi](#hidden-wi-fi)
-  - [Connect to multiple networks](#connect-to-multiple-networks)
   - [SNTP (time) server](#sntp-time-server)
   - [Sensor for display awake vs sleeping](#sensor-for-display-awake-vs-sleeping)
   - [Deep sleep](#deep-sleep)
@@ -180,6 +176,10 @@ ota:
 
 ## Examples
 
+> [!NOTE]
+> Network settings, such as Wi-Fi, manual IP, gateway, DNS server, and the reboot when the connection fails, are
+> described in [Network](network.md).
+
 ### API encryption
 >
 > [!IMPORTANT]
@@ -275,21 +275,6 @@ web_server:
     password: !secret web_server_password
 ```
 
-### Reboot when API fails
-
-Reboot your panel if it loses its connection to Home Assistant for more than a certain time (15 minutes in this example).
-
-Sometimes the low-level ESP functions could report that the ESP is connected to the network,
-when in fact it is not and only a full reboot fixes it.
-
-To support long times without Wi-Fi, this is disabled by default in this project, but you can set a reasonable interval to restart, based on your network reliability.
-
-```yaml
-# Reboot if HA is not connected for 15 minutes
-api:
-  reboot_timeout: 15min
-```
-
 ### Feedback when Home Assistant is unavailable
 
 While Home Assistant is disconnected, the panel does not open pages that need it:
@@ -308,55 +293,6 @@ substitutions:
   page_unavailable_sound: true
   # Optional: replace the default tone (RTTTL)
   tone_page_unavailable: "unavailable:d=16,o=5,b=160:a5,e5"
-```
-
-### Manual IP
-
-Set IP address manually.
-
-> [!IMPORTANT]
-> At least one DNS server is required to enable TFT transfer directly from GitHub, otherwise use `nextion_update_url`.
-
-```yaml
-# Set IP address manually
-wifi:
-  networks:
-    - id: !extend wifi_default
-      manual_ip:
-        static_ip: 192.168.0.123
-        gateway: 192.168.0.1
-        subnet: 255.255.255.0
-        dns1: 1.1.1.1  # At least one DNS server is required to enable TFT transfer directly from GitHub, otherwise use `nextion_update_url`.
-        dns2: 8.8.8.8
-```
-
-### Hidden Wi-Fi
-
-Connect to a hidden Wi-Fi network.
-
-```yaml
-# Connect to a hidden Wi-Fi network.
-wifi:
-  networks:
-    - id: !extend wifi_default
-      hidden: true
-  fast_connect: true
-```
-
-### Connect to multiple networks
-
-NSPanel will attempt to connect to the one with the highest signal strength or, if you set a priority, it will try to connect to the highest priority.
-After failing it will connect to the second network.
-
-```yaml
-# Set dual network
-wifi:
-  networks:
-    - id: !extend wifi_default
-      priority: 10
-    - ssid: !secret wifi_ssid_backup
-      password: !secret wifi_password_backup
-      priority: 0
 ```
 
 ### SNTP (time) server
