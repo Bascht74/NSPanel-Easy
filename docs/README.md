@@ -65,6 +65,8 @@ Optional packages that extend the base firmware:
   available in your panel's YAML, with its default and what it changes.
 - [Customization](customization.md) — advanced examples: API encryption, custom
   OTA passwords, static IPs, reboot-on-API-failure, and more.
+- [Network and Internet Access](network_access.md) — why the panel accesses the
+  internet, what is exchanged, firewall rules, and how to run it offline.
 - [MDI Icons Cheatsheet](https://edwardtfn.github.io/NSPanel-Easy/icons/cheatsheet.html)
   — searchable list of all Material Design Icons supported by the panel.
   Click any icon to copy its `mdi:` name.
