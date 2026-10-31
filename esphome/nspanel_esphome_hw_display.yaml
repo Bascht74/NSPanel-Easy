@@ -83,7 +83,7 @@ display:
       then:
         - lambda: |-
             current_page_id = get_page_id("boot");
-            id(page_change_pending) = false;  // The display restarted on the boot page
+            system_flags.page_change_pending = false;  // The display restarted on the boot page
             wait_for_display->stop();
             ESP_LOGI("${TAG_HW_DISPLAY}", "Nextion setup triggered");
             system_flags.nextion_ready = true;
@@ -118,13 +118,6 @@ globals:
     type: uint8_t
     restore_value: true
     initial_value: ${button_back_font}
-
-  # Set by goto_page when it sends a page, cleared when the display reports a page.
-  # Until then current_page_id still holds the page being left.
-  - id: page_change_pending
-    type: bool
-    restore_value: false
-    initial_value: 'false'
 
 nspanel_easy:
   detailed_entity_id: detailed_entity
@@ -325,7 +318,11 @@ script:
             return;
           }
           ESP_LOGVV("${TAG_HW_DISPLAY}", "Send page id '%" PRIu8 "' to Nextion", page_id);
-          id(page_change_pending) = true;  // Cleared by page_change once the display reports a page
+          // Until the display reports a page, current_page_id still holds the page being left.
+          // Only this script sets the flag, direct page commands such as API reload, OTA dialog or theme update do not.
+          // A page command lost on the UART keeps the boot page writes off until the next page report.
+          // watchdog_round recovers that with wakeup while current_page_id is still the boot page.
+          system_flags.page_change_pending = true;  // Cleared by page_change once the display reports a page
           disp1->goto_page(page_id);
 
   - id: page_change
@@ -341,7 +338,7 @@ script:
             last_page_id = current_page_id;
             current_page_id = new_page_id;
           }
-          id(page_change_pending) = false;  // current_page_id now holds the page the display shows
+          system_flags.page_change_pending = false;  // current_page_id now holds the page the display shows
 
           // Page entry resets visibility to the TFT defaults, so no restore is pending
           unavailable_unhide_pending = false;

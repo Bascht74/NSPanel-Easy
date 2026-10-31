@@ -34,13 +34,14 @@ struct SystemFlags {
   uint16_t ota_dialog_shown : 1;        ///< OTA dialog is shown on the display
   uint16_t display_sleep : 1;           ///< Display is in sleep mode
   uint16_t display_resync_pending : 1;  ///< Display restarted; repaint on next page entry
+  uint16_t page_change_pending : 1;     ///< goto_page sent a page the display has not reported yet
 
   // Baud rate flags
   uint16_t baud_fallback_active : 1;  ///< UART is operating at non-primary rate (detected via scan)
   uint16_t baud_scan_success : 1;     ///< Last baud rate scan found a responsive rate
 
   // Reserved flags
-  uint16_t reserved : 2;
+  uint16_t reserved : 1;
 
   // Default constructor - all flags start as false (zero-initialized)
   SystemFlags()
@@ -55,6 +56,7 @@ struct SystemFlags {
         ota_in_progress(0),
         ota_dialog_shown(0),
         display_sleep(0),
+        page_change_pending(0),
         baud_fallback_active(0),
         baud_scan_success(0),
         reserved(0) {}
