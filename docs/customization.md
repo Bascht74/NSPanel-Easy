@@ -10,7 +10,7 @@ Table of contents:
   - [API encryption](#api-encryption)
   - [Custom OTA password](#custom-ota-password)
   - [OTA encryption](#ota-encryption)
-  - [Web server credentials](#web-server-credentials)
+  - [Web server](#web-server)
   - [SNTP (time) server](#sntp-time-server)
   - [Sensor for display awake vs sleeping](#sensor-for-display-awake-vs-sleeping)
   - [Deep sleep](#deep-sleep)
@@ -32,7 +32,6 @@ Table of contents:
   - [Hardware button scripts (v4.3.30+)](#hardware-button-scripts-v4330)
   - [Expose relay fallback switch](#expose-relay-fallback-switch)
   - [Relay Interlocking](#relay-interlocking)
-  - [Remove non-essential components](#remove-non-essential-components)
 
 &nbsp;
 &nbsp;
@@ -160,9 +159,6 @@ This is useful for altering standard settings or freeing up memory for additiona
 Here's how you might remove some default settings:
 
 ```yaml
-# Removes the `captive_portal` component
-captive_portal: !remove
-
 # Removes the OTA password
 ota:
   - id: !extend ota_std
@@ -263,17 +259,19 @@ ota:
 > The previous version of this guide enabled the OTA encryption by setting `ota_password` to blank.
 > If you used that, add `password: !remove` as shown above, otherwise ESPHome rejects the configuration because the password cannot be combined with the encryption.
 
-### Web server credentials
+### Web server
 
-By default, the web server credentials are defined by this project (advanced only) using `admin` as `username` and your `Wi-Fi password` as `password`, but you can replace it using this customization:
+The web server is not included by default. To add it, protected with your own credentials:
 
 ```yaml
-# Custom web server credentials
+# Add the web server with custom credentials
 web_server:
   auth:
     username: !secret web_server_username
     password: !secret web_server_password
 ```
+
+The web server uses a significant amount of memory, so check the [memory usage](#memory-management) after adding it.
 
 ### Feedback when Home Assistant is unavailable
 
@@ -822,18 +820,6 @@ switch:
   - id: !extend relay_2
     interlock: [relay_1, relay_2]
     interlock_wait_time: 500ms  # Please adjust this accordingly
-```
-
-### Remove non-essential components
-
-This can be useful to free-up memory, so other custom components could be used instead.
-
-```yaml
-# Removes captive portal - Pre-built and advanced only
-captive_portal: !remove
-
-# Removes embedded web server - Advanced only
-web_server: !remove
 ```
 
 ### Restart with 15s button press
