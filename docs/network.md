@@ -226,6 +226,12 @@ request, the server can see your public IP address and, from the URL, the firmwa
 
 No credentials, device identifiers, Home Assistant data, or user settings are sent. Nothing is uploaded.
 
+> [!NOTE]
+> The connection is encrypted, but the panel does not verify the server certificate (a limitation of the ESPHome Nextion
+> component). Someone able to intercept the traffic between the panel and GitHub could serve a different file.
+> If this is a concern, [serve the TFT files locally](#running-without-internet-access), so the download never leaves
+> your local network.
+
 Each download is about 0.7 MB for `blank` and 13.5 MB for `landscape` and `portrait`. Failed attempts are downloaded
 again.
 
